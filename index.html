@@ -142,8 +142,8 @@
       font-family:var(--font-family);
       font-size:calc(var(--text-size) * 0.25);
       height:calc(var(--button-box) * 0.25);
-      width:calc(var(--button-box) * 0.25);
       padding:10px;
+      width:auto;
       box-sizing:border-box;
       opacity:0; transition:opacity var(--transition-duration);
       display:flex; align-items:center; justify-content:center;
@@ -167,7 +167,7 @@
       font-size: calc(var(--text-size) * 0.5);
       background: transparent;
       color: var(--text-color);
-      border: none;
+      border: 2px solid var(--text-color);
       cursor: pointer;
       font-family: var(--font-family);
       opacity: 0;
@@ -176,6 +176,7 @@
       position: absolute;
       right: 15px;
       bottom: 15px;
+      box-sizing: border-box;
     }
 
     .confirm {
@@ -215,6 +216,13 @@
       top: auto;
       right: auto;
       margin-left: 10px;
+      width: auto;
+      height: calc(var(--button-box) * 0.25);
+      padding: 0 5px;
+    }
+    button.disabled {
+      opacity: 0.3;
+      pointer-events: none;
     }
     #summaryTyper {
       overflow: visible;
@@ -495,21 +503,46 @@
     const dayNumEl = document.getElementById('day-num');
     dayNumEl.value = now.getDate();
     monthNameEl.textContent = months[m];
-    document.getElementById('prev-day').onclick = () => {
+    const prevDayBtn = document.getElementById('prev-day');
+    const nextDayBtn = document.getElementById('next-day');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+
+    function updateDateArrows() {
+      if (m === now.getMonth()) {
+        prevMonthBtn.classList.add('disabled');
+      } else {
+        prevMonthBtn.classList.remove('disabled');
+      }
+      if (m === now.getMonth() && parseInt(dayNumEl.value, 10) <= now.getDate()) {
+        prevDayBtn.classList.add('disabled');
+      } else {
+        prevDayBtn.classList.remove('disabled');
+      }
+    }
+    updateDateArrows();
+
+    prevDayBtn.onclick = () => {
       let d = parseInt(dayNumEl.value, 10);
+      if (m === now.getMonth() && d <= now.getDate()) return;
       dayNumEl.value = d > 1 ? d - 1 : 31;
+      updateDateArrows();
     };
-    document.getElementById('next-day').onclick = () => {
+    nextDayBtn.onclick = () => {
       let d = parseInt(dayNumEl.value, 10);
       dayNumEl.value = d < 31 ? d + 1 : 1;
+      updateDateArrows();
     };
-    document.getElementById('prev-month').onclick = () => {
+    prevMonthBtn.onclick = () => {
+      if (m === now.getMonth()) return;
       m = (m + 11) % 12;
       monthNameEl.textContent = months[m];
+      updateDateArrows();
     };
-    document.getElementById('next-month').onclick = () => {
+    nextMonthBtn.onclick = () => {
       m = (m + 1) % 12;
       monthNameEl.textContent = months[m];
+      updateDateArrows();
     };
     document.getElementById('arrow3').addEventListener('click', () => {
       reservation.date = `${dayNumEl.value} ${months[m]}`;
@@ -557,11 +590,14 @@
     }
 
     // Step6 name input
+   let nameInit = false;
    function initNameStep() {
      const last = document.getElementById('lastname-input');
      const first = document.getElementById('firstname-input');
-     last.value = '';
-     first.value = '';
+     if (!nameInit) {
+       [last, first].forEach(el => { el.value = ''; });
+       nameInit = true;
+     }
      [last, first].forEach(el => { el.style.visibility = 'visible'; el.style.opacity = '1'; });
      last.focus();
      const arrow6 = document.getElementById('arrow6');
