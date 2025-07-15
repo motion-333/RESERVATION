@@ -97,13 +97,26 @@
     .controls button { border:2px solid var(--text-color); padding:0 1rem; }
     #controls2 button,
     #controls3 button,
-    #controls4 button,
-    #controls5 button {
+    #controls4 button {
       width: var(--button-box);
       height: var(--button-box);
       padding: 0;
     }
-    #controls5 button { font-size: calc(var(--text-size) * 0.25); }
+    #controls5 {
+      display: grid;
+      width: 100%;
+      gap: var(--control-gap);
+      justify-content: center;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--text-color) transparent;
+    }
+    #controls5::-webkit-scrollbar { height:0.5rem; }
+    #controls5::-webkit-scrollbar-thumb { background:var(--text-color); border-radius:0.25rem; }
+    #controls5 button {
+      padding: 0;
+      font-size: calc(var(--text-size) * 0.25);
+    }
     .controls button.selected { background:var(--text-color); color:var(--bg-color); }
     .or {
       padding: 0 0.5rem;
@@ -136,9 +149,6 @@
       line-height: var(--button-box);
       text-align: center;
     }
-    #controls5 { overflow-x:auto; scrollbar-width:thin; scrollbar-color:var(--text-color) transparent; }
-    #controls5::-webkit-scrollbar { height:0.5rem; }
-    #controls5::-webkit-scrollbar-thumb { background:var(--text-color); border-radius:0.25rem; }
     .arrow {
       position:absolute; right:var(--strip-padding);
       top:50%; transform:translateY(-50%);
@@ -173,6 +183,7 @@
       opacity: 0;
       transition: opacity var(--transition-duration);
       pointer-events: none;
+      z-index: 10;
     }
     #startStep { justify-content: center; }
 
@@ -655,6 +666,18 @@
 
     // Step5 times
     const c5 = document.getElementById('controls5');
+    function adjustTimeButtonSize() {
+      const gap = parseFloat(getComputedStyle(c5).columnGap || getComputedStyle(c5).gap || 0);
+      const total = c5.children.length;
+      const available = reservationDiv.clientWidth - gap * (total - 1);
+      const size = Math.min(reservationDiv.clientHeight, available / total);
+      c5.style.gridTemplateColumns = `repeat(${total}, ${size}px)`;
+      Array.from(c5.children).forEach(btn => {
+        btn.style.width = `${size}px`;
+        btn.style.height = `${size}px`;
+      });
+    }
+
     function loadTimes() {
       c5.innerHTML = '';
       let slots;
@@ -682,6 +705,7 @@
         });
         c5.appendChild(b);
       });
+      adjustTimeButtonSize();
     }
 
     // Step6 name input
@@ -702,7 +726,7 @@
 
 
     // Step8 info input
-    function initInfoStep() {
+  function initInfoStep() {
       const inEl = document.getElementById('info-input');
       const confirm = document.getElementById('arrow8');
       const ok = document.getElementById('okBtn');
@@ -727,10 +751,10 @@
           setTimeout(next, 400);
         };
       };
-    }
+  }
 
-    // Initialize
-    document.getElementById('startBtn').addEventListener('click', () => {
+  // Initialize
+  document.getElementById('startBtn').addEventListener('click', () => {
       const b = document.getElementById('startBtn');
       b.classList.add('fade');
       setTimeout(() => { idx = 1; showStep(1); }, 400);
@@ -741,6 +765,9 @@
         idx--;
         showStep(idx);
       }
+    });
+    window.addEventListener('resize', () => {
+      if (steps[idx].id === 'step5') adjustTimeButtonSize();
     });
     showStep(0);
   </script>
