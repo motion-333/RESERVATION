@@ -82,7 +82,7 @@
     #controls3 button,
     #controls4 button,
     #controls5 button { width: var(--button-box); padding: 0; }
-    #controls5 button { font-size: calc(var(--text-size) * 0.6); }
+    #controls5 button { font-size: calc(var(--text-size) * 0.5); }
     .controls button.selected { background:var(--text-color); color:var(--bg-color); }
     .or {
       padding: 0 0.5rem;
@@ -117,7 +117,8 @@
       color:var(--text-color);
       font-family:var(--font-family);
       font-size:calc(var(--text-size) * 0.5);
-      width:calc(var(--button-box) * 0.75); height:calc(var(--button-box) * 0.75);
+      padding:0 0.5rem;
+      height:calc(var(--button-box) * 0.75);
       opacity:0; transition:opacity var(--transition-duration);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer;
@@ -135,6 +136,17 @@
       font-family: var(--font-family);
     }
     #startBtn.fade { opacity: 0; }
+
+    .ok-btn {
+      font-size: var(--text-size);
+      background: transparent;
+      color: var(--text-color);
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-family);
+      opacity: 0;
+      transition: opacity var(--transition-duration);
+    }
 
     .confirm {
       opacity: 0;
@@ -162,11 +174,16 @@
       color: var(--text-color);
       text-align: center;
       font-size: clamp(4vh,4vw,var(--text-size));
+      font-family: var(--font-family);
+      font-weight: normal;
       height: var(--button-box);
       outline: none;
     }
     .custom-input .arrow {
       position: static;
+      transform: none;
+      top: auto;
+      right: auto;
       width: calc(var(--button-box) * 0.75);
     }
     #summaryTyper {
@@ -226,17 +243,20 @@
     </div>
     <div class="step" data-question="À quel nom ?" id="step6">
       <span class="typer"></span>
-      <input type="text" id="name-input" class="text-input" placeholder="Nom Prénom">
+      <input type="text" id="lastname-input" class="text-input" placeholder="Nom">
+      <input type="text" id="firstname-input" class="text-input" placeholder="Prénom">
       <button class="arrow" id="arrow6">Confirmer</button>
     </div>
     <div class="step" id="step7">
       <span class="typer" id="summaryTyper"></span>
-      <button class="arrow" id="arrow7">Confirmer</button>
     </div>
-    <div class="step" data-question="Une info à rajouter?:" id="step8">
+    <div class="step" data-question="Une info à rajouter?" id="step8">
       <span class="typer"></span>
       <input type="text" id="info-input" class="text-input" placeholder="Une table en terrasse...">
-      <button class="arrow" id="arrow8">Confirmer</button>
+      <button id="okBtn" class="ok-btn">Tout est OK!</button>
+    </div>
+    <div class="step" id="step9">
+      <span class="typer" id="thanksTyper"></span>
     </div>
   </div>
   <script>
@@ -291,6 +311,10 @@
       if (s.id === 'startStep') return;
       const question = s.getAttribute('data-question');
       const typer = s.querySelector('.typer');
+      if (s.id === 'step9') {
+        typeText(document.getElementById('thanksTyper'), 'Merci pour votre réservation!');
+        return;
+      }
       const controls = s.querySelector('.controls');
       const arrow = s.querySelector('.arrow');
       if (controls) {
@@ -327,7 +351,7 @@
         const t = document.getElementById('summaryTyper');
         t.textContent = sum;
         t.classList.add('scroll');
-        t.addEventListener('animationend', () => { if (arrow) arrow.style.opacity = '1'; }, {once:true});
+        t.addEventListener('animationend', () => next(), {once:true});
         return;
       } else {
         reservationDiv.style.overflowX = 'auto';
@@ -349,7 +373,6 @@
                 if (arrow) arrow.style.opacity = '1';
               } else if (s.id === 'step8') {
                 initInfoStep();
-                if (arrow) arrow.style.opacity = '1';
               }
             });
           }, 3000);
@@ -399,7 +422,7 @@
       wrapper.appendChild(input);
       const confirm = document.createElement('button');
       confirm.className = 'arrow';
-      confirm.textContent = 'Confirmer';
+      confirm.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg>';
       wrapper.appendChild(confirm);
       c2.replaceChild(wrapper, plus);
       setTimeout(() => {
@@ -476,40 +499,38 @@
 
     // Step6 name input
    function initNameStep() {
-     const inEl = document.getElementById('name-input');
-     inEl.value = '';
-      inEl.style.visibility = 'visible';
-      inEl.style.opacity = '1';
-     inEl.focus();
+     const last = document.getElementById('lastname-input');
+     const first = document.getElementById('firstname-input');
+     last.value = '';
+     first.value = '';
+     [last, first].forEach(el => { el.style.visibility = 'visible'; el.style.opacity = '1'; });
+     last.focus();
      const arrow6 = document.getElementById('arrow6');
      arrow6.style.opacity = '1';
      arrow6.onclick = () => {
-       const parts = inEl.value.trim().split(' ');
-       reservation.firstname = parts.pop();
-       reservation.lastname = parts.join(' ');
-        inEl.style.opacity = '0';
-        inEl.style.visibility = 'hidden';
+       reservation.lastname = last.value.trim();
+       reservation.firstname = first.value.trim();
+       [last, first].forEach(el => { el.style.opacity = '0'; el.style.visibility = 'hidden'; });
        next();
      };
    }
 
-    // Step7 handled in showStep
-    document.getElementById('arrow7').addEventListener('click', next);
 
     // Step8 info input
     function initInfoStep() {
       const inEl = document.getElementById('info-input');
+      const ok = document.getElementById('okBtn');
       inEl.value = '';
       inEl.style.visibility = 'visible';
       inEl.style.opacity = '1';
       inEl.focus();
-      const arrow8 = document.getElementById('arrow8');
-      arrow8.style.opacity = '1';
-      arrow8.onclick = () => {
+      ok.style.opacity = '1';
+      ok.onclick = () => {
         reservation.comment = inEl.value.trim();
+        ok.style.opacity = '0';
         inEl.style.opacity = '0';
         inEl.style.visibility = 'hidden';
-        alert('Votre réservation: ' + JSON.stringify(reservation));
+        next();
       };
     }
 
