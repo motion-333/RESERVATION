@@ -35,8 +35,9 @@
       transition:opacity var(--transition-duration);
       gap: var(--control-gap);
       justify-content: flex-start;
+      pointer-events: none;
     }
-    .step.active { opacity:1; visibility:visible; }
+    .step.active { opacity:1; visibility:visible; pointer-events: auto; }
     .typer, .invisible-input {
       font-size: var(--text-size); white-space:nowrap; overflow:hidden;
       height: var(--button-box); line-height: var(--button-box);
@@ -66,14 +67,14 @@
     .name-fields {
       display:flex;
       justify-content:center;
-      gap: calc(var(--control-gap) / 4);
+      gap: 30px;
       width:100%;
     }
     #step6 .text-input {
       position: static;
       opacity: 1;
       visibility: visible;
-      width: calc(50% - var(--control-gap)/4);
+      width: calc(50% - 15px);
       border-right: none;
     }
     #step6 { justify-content: center; }
@@ -114,6 +115,10 @@
     .controls input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     .controls input[type='number'] { -moz-appearance: textfield; }
     #day-num { width: calc(var(--button-box) * 0.8); }
+    #prev-day, #next-day, #prev-month, #next-month {
+      width: calc(var(--button-box) * 0.5);
+      height: calc(var(--button-box) * 0.5);
+    }
     #month-name {
       display: inline-flex;
       align-items: center;
@@ -162,11 +167,10 @@
       font-family: var(--font-family);
       opacity: 0;
       transition: opacity var(--transition-duration);
-      height: calc(var(--button-box) * 0.5);
-      padding: 0 0.5rem;
+      padding: 10px;
       position: absolute;
-      right: 10px;
-      bottom: 10px;
+      right: 15px;
+      bottom: 15px;
     }
 
     .confirm {
@@ -218,6 +222,7 @@
       white-space: nowrap;
       display: inline-block;
       animation: slideLeft 10s linear forwards;
+      pointer-events: none;
     }
     @keyframes slideLeft {
       from { transform: translateX(100vw); }
@@ -331,10 +336,16 @@
       setTimeout(() => { container.style.visibility = 'hidden'; cb && cb(); }, items.length * 50);
     }
 
-    function showStep(i) {
-      steps.forEach(s => s.classList.remove('active'));
-      const s = steps[i];
-      s.classList.add('active');
+   function showStep(i) {
+     steps.forEach(s => s.classList.remove('active'));
+     const s = steps[i];
+     s.classList.add('active');
+      const summary = document.getElementById('summaryTyper');
+      if (summary) {
+        summary.classList.remove('scroll');
+        summary.style.transform = 'none';
+      }
+      reservationDiv.scrollLeft = 0;
       if (s.id === 'startStep') return;
       const question = s.getAttribute('data-question');
       const typer = s.querySelector('.typer');
