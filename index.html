@@ -18,12 +18,12 @@
     }
     *, *::before, *::after { box-sizing: border-box; }
     body, html {
-      margin: 0; padding: 0; height: 100%; background: var(--bg-color);
+      margin: 0; padding: 0 2vw; height: 100%; background: var(--bg-color);
       font-family: var(--font-family); color: var(--text-color);
     }
     #reservation {
       position: absolute; top:50%; left:50%; transform: translate(-50%,-50%);
-      width: 100vw; height: var(--strip-height);
+      width: 100%; height: var(--strip-height);
       display: flex; align-items: center; padding: 0 var(--strip-padding);
       background: var(--bg-color);
       overflow-x: auto;
@@ -74,7 +74,7 @@
       position: static;
       opacity: 1;
       visibility: visible;
-      width: calc(45% - 7.5px);
+      width: calc(40% - 7.5px);
       border-right: none;
     }
     #step6 { justify-content: center; }
@@ -141,9 +141,8 @@
       color:var(--text-color);
       font-family:var(--font-family);
       font-size:calc(var(--text-size) * 0.25);
-      width:calc(var(--button-box) * 0.25);
       height:calc(var(--button-box) * 0.25);
-      padding:0;
+      width:auto; padding:10px;
       opacity:0; transition:opacity var(--transition-duration);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer;
@@ -171,7 +170,7 @@
       font-family: var(--font-family);
       opacity: 0;
       transition: opacity var(--transition-duration);
-      padding: 0 10px;
+      padding: 10px;
       position: absolute;
       right: 15px;
       bottom: 15px;
@@ -215,7 +214,7 @@
       right: auto;
       width: auto;
       height: calc(var(--button-box) * 0.25);
-      padding: 0 10px;
+      padding: 10px;
       margin-left: 10px;
     }
     #summaryTyper {
@@ -528,22 +527,25 @@
     // Step5 times
     const c5 = document.getElementById('controls5');
     function loadTimes() {
-      c5.innerHTML = '';{
-        let start = reservation.period === 'Midi' ? 12 : 17;
-        let end = reservation.period === 'Midi' ? 17 : 22.5;
-        for (let t = start; t <= end; t += 0.5) {
-          const hh = String(Math.floor(t)).padStart(2,'0');
-          const mm = t % 1 ? '30':'00';
-          const b = document.createElement('button'); b.textContent = `${hh}:${mm}`;
-          b.addEventListener('click', () => {
-            Array.from(c5.children).forEach(ch => ch.style.opacity = '0');
-            b.classList.add('selected');
-            reservation.time = b.textContent;
-            setTimeout(next, 400);
-          });
-          c5.appendChild(b);
-        }
-      }
+      c5.innerHTML = '';
+      const slots = [17,'30',18,'30',19,'30',20,'30',21,'30',22,'30'];
+      let lastHour = 17;
+      slots.forEach(label => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        const time = label === '30'
+          ? `${String(lastHour).padStart(2,'0')}:30`
+          : `${String(label).padStart(2,'0')}:00`;
+        if (label !== '30') lastHour = label;
+        b.dataset.time = time;
+        b.addEventListener('click', () => {
+          Array.from(c5.children).forEach(ch => ch.style.opacity = '0');
+          b.classList.add('selected');
+          reservation.time = b.dataset.time;
+          setTimeout(next, 400);
+        });
+        c5.appendChild(b);
+      });
     }
 
     // Step6 name input
