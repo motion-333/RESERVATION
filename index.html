@@ -142,8 +142,8 @@
       font-family:var(--font-family);
       font-size:calc(var(--text-size) * 0.25);
       height:calc(var(--button-box) * 0.25);
-      padding:10px;
-      width:auto;
+      width:calc(var(--button-box) * 0.25);
+      padding:0;
       box-sizing:border-box;
       opacity:0; transition:opacity var(--transition-duration);
       display:flex; align-items:center; justify-content:center;
@@ -190,12 +190,14 @@
       font-family: var(--font-family);
       opacity: 0;
       transition: opacity var(--transition-duration);
-      padding: 10px;
+      width: calc(var(--button-box) * 0.5);
+      height: calc(var(--button-box) * 0.5);
+      padding: 0;
       position: absolute;
       right: 15px;
       bottom: 15px;
       box-sizing: border-box;
-    }
+      }
 
     .confirm {
       opacity: 0;
@@ -234,9 +236,9 @@
       top: auto;
       right: auto;
       margin-left: 10px;
-      width: auto;
+      width: calc(var(--button-box) * 0.25);
       height: calc(var(--button-box) * 0.25);
-      padding: 0 5px;
+      padding: 0;
     }
     button.disabled {
       opacity: 0.3;
@@ -469,6 +471,55 @@
     }
   }
 
+  function resetStepData(stepIdx) {
+    switch (stepIdx) {
+      case 1:
+        delete reservation.restaurant;
+        document.querySelectorAll('#controls1 button').forEach(b => {
+          b.classList.remove('selected');
+          b.style.opacity = '1';
+        });
+        break;
+      case 2:
+        delete reservation.people;
+        createControls2();
+        break;
+      case 3:
+        delete reservation.date;
+        dayNumEl.value = now.getDate();
+        m = now.getMonth();
+        monthNameEl.textContent = months[m];
+        updateDateArrows();
+        break;
+      case 4:
+        delete reservation.period;
+        controls4.querySelectorAll('button').forEach(b => {
+          b.classList.remove('selected');
+          b.style.opacity = '1';
+        });
+        break;
+      case 5:
+        delete reservation.time;
+        c5.innerHTML = '';
+        break;
+      case 6:
+        delete reservation.lastname;
+        delete reservation.firstname;
+        nameInit = false;
+        document.getElementById('lastname-input').value = '';
+        document.getElementById('firstname-input').value = '';
+        break;
+      case 8:
+        delete reservation.comment;
+        document.getElementById('info-input').value = '';
+        document.getElementById('okBtn').style.opacity = '0';
+        document.getElementById('arrow8').style.opacity = '1';
+        break;
+      default:
+        break;
+    }
+  }
+
     function next() {
       const current = steps[idx];
       const controls = current.querySelector('.controls');
@@ -491,43 +542,49 @@
 
     // Step2
     const c2 = document.getElementById('controls2');
-    for (let i = 1; i <= 7; i++) {
-      const b = document.createElement('button'); b.textContent = i;
-      b.addEventListener('click', () => {
-        [...c2.children].forEach(ch => ch.style.opacity = '0');
-        b.classList.add('selected');
-        reservation.people = i;
-        setTimeout(next, 400);
+    function createControls2() {
+      c2.innerHTML = '';
+      for (let i = 1; i <= 7; i++) {
+        const b = document.createElement('button');
+        b.textContent = i;
+        b.addEventListener('click', () => {
+          Array.from(c2.children).forEach(ch => ch.style.opacity = '0');
+          b.classList.add('selected');
+          reservation.people = i;
+          setTimeout(next, 400);
+        });
+        c2.appendChild(b);
+      }
+      const plus = document.createElement('button');
+      plus.textContent = '+';
+      plus.addEventListener('click', () => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-input';
+        wrapper.style.opacity = '1';
+        const input = document.createElement('input');
+        input.type = 'number';
+        wrapper.appendChild(input);
+        const confirm = document.createElement('button');
+        confirm.className = 'arrow';
+        confirm.textContent = 'OK';
+        wrapper.appendChild(confirm);
+        c2.replaceChild(wrapper, plus);
+        setTimeout(() => {
+          wrapper.style.width = 'calc(var(--button-box)*2)';
+          confirm.style.opacity = '1';
+        }, 10);
+        input.focus();
+        confirm.onclick = () => {
+          const v = parseInt(input.value, 10);
+          if (!isNaN(v) && v > 0) {
+            reservation.people = v;
+            next();
+          }
+        };
       });
-      c2.appendChild(b);
+      c2.appendChild(plus);
     }
-    const plus = document.createElement('button'); plus.textContent = '+';
-    plus.addEventListener('click', () => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'custom-input';
-      wrapper.style.opacity = '1';
-      const input = document.createElement('input');
-      input.type = 'number';
-      wrapper.appendChild(input);
-      const confirm = document.createElement('button');
-      confirm.className = 'arrow';
-      confirm.textContent = 'OK';
-      wrapper.appendChild(confirm);
-      c2.replaceChild(wrapper, plus);
-      setTimeout(() => {
-        wrapper.style.width = 'calc(var(--button-box)*2)';
-        confirm.style.opacity = '1';
-      }, 10);
-      input.focus();
-      confirm.onclick = () => {
-        const v = parseInt(input.value, 10);
-        if (!isNaN(v) && v > 0) {
-          reservation.people = v;
-          next();
-        }
-      };
-    });
-    c2.appendChild(plus);
+    createControls2();
 
     // Step3 day/month
     const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
@@ -681,6 +738,7 @@
     });
     backBtn.addEventListener('click', () => {
       if (idx > 0) {
+        resetStepData(idx);
         idx--;
         showStep(idx);
       }
