@@ -95,10 +95,13 @@
     .controls input[type='number'] { -moz-appearance: textfield; }
     #day-num { width: calc(var(--button-box) * 0.8); }
     #month-name {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: calc(var(--button-box) * 2.5);
       height: var(--button-box);
       line-height: var(--button-box);
+      text-align: center;
     }
     #controls5 { overflow-x:auto; scrollbar-width:thin; scrollbar-color:var(--text-color) transparent; }
     #controls5::-webkit-scrollbar { height:0.5rem; }
@@ -115,7 +118,7 @@
     #startStep { justify-content: center; }
 
     #startBtn {
-      width: 100%;
+      width: var(--button-box);
       height: var(--button-box);
       font-size: var(--text-size);
       border: 2px solid var(--text-color);
@@ -123,6 +126,9 @@
       color: var(--text-color);
       cursor: pointer;
       transition: opacity var(--transition-duration);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     #startBtn.fade { opacity: 0; }
 
@@ -159,7 +165,7 @@
     }
     @keyframes slideLeft {
       from { transform: translateX(100vw); }
-      to { transform: translateX(-100%); }
+      to { transform: translateX(calc(-100% - 100vw)); }
     }
   </style>
 </head>
@@ -193,15 +199,15 @@
       </div>
       <button class="arrow" id="arrow3"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
-    <div class="step" id="step4">
+    <div class="step" data-question="Quelle heure ?" id="step4">
+      <span class="typer"></span>
       <div class="controls" id="controls4">
         <button data-value="Midi">Midi</button>
         <button data-value="Soir">Soir</button>
       </div>
       <button class="arrow" id="arrow4"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
-    <div class="step" data-question="Quelle heure ?" id="step5">
-      <span class="typer"></span>
+    <div class="step" id="step5">
       <div class="controls" id="controls5"></div>
       <button class="arrow" id="arrow5"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
@@ -222,6 +228,7 @@
   </div>
   <script>
     const reservation = {};
+    const reservationDiv = document.getElementById('reservation');
     const steps = Array.from(document.querySelectorAll('.step'));
     let idx = 0;
 
@@ -279,21 +286,37 @@
       }
       if (arrow) arrow.style.opacity = '0';
 
-      if (s.id === 'step4') {
+
+      if (s.id === 'step1') {
+        if (typer) {
+          typer.style.opacity = '0';
+          typer.style.borderRight = 'none';
+        }
         if (controls) {
           controls.style.visibility = 'visible';
-          fadeInSeq(controls, () => { if (arrow && s.id !== 'step2') arrow.style.opacity = '1'; });
+          fadeInSeq(controls, () => { if (arrow) arrow.style.opacity = '1'; });
+        }
+        return;
+      }
+
+      if (s.id === 'step5') {
+        if (controls) {
+          controls.style.visibility = 'visible';
+          fadeInSeq(controls, () => { if (arrow) arrow.style.opacity = '1'; });
         }
         return;
       }
 
       if (s.id === 'step7') {
+        reservationDiv.style.overflow = 'visible';
         const sum = `Réservation ${reservation.restaurant} pour ${reservation.people} personnes le ${reservation.date} à ${reservation.time} au nom de ${reservation.lastname}, ${reservation.firstname}`;
         const t = document.getElementById('summaryTyper');
         t.textContent = sum;
         t.classList.add('scroll');
         t.addEventListener('animationend', () => { if (arrow) arrow.style.opacity = '1'; }, {once:true});
         return;
+      } else {
+        reservationDiv.style.overflowX = 'auto';
       }
 
       if (typer && question) {
@@ -362,7 +385,11 @@
       const arrow2 = document.getElementById('arrow2');
       wrapper.appendChild(arrow2);
       c2.replaceChild(wrapper, plus);
-      setTimeout(() => { wrapper.style.width = 'calc(var(--button-box)*2)'; arrow2.style.opacity = '1'; }, 10);
+      setTimeout(() => {
+        wrapper.style.width = 'calc(var(--button-box)*2)';
+        arrow2.style.opacity = '1';
+        arrow2.style.display = 'flex';
+      }, 10);
       input.focus();
       arrow2.onclick = () => {
         const v = parseInt(input.value, 10);
@@ -431,8 +458,8 @@
         }
       }
     }
-    steps[4].addEventListener('transitionend', () => {
-      if (steps[4].classList.contains('active')) loadTimes();
+    steps[5].addEventListener('transitionend', () => {
+      if (steps[5].classList.contains('active')) loadTimes();
     });
 
     // Step6 name input
