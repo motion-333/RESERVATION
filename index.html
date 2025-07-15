@@ -67,14 +67,14 @@
     .name-fields {
       display:flex;
       justify-content:center;
-      gap: 30px;
+      gap: 15px;
       width:100%;
     }
     #step6 .text-input {
       position: static;
       opacity: 1;
       visibility: visible;
-      width: calc(50% - 15px);
+      width: calc(45% - 7.5px);
       border-right: none;
     }
     #step6 { justify-content: center; }
@@ -118,6 +118,9 @@
     #prev-day, #next-day, #prev-month, #next-month {
       width: calc(var(--button-box) * 0.5);
       height: calc(var(--button-box) * 0.5);
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
     #month-name {
       display: inline-flex;
@@ -138,8 +141,9 @@
       color:var(--text-color);
       font-family:var(--font-family);
       font-size:calc(var(--text-size) * 0.25);
-      padding:0 0.25rem;
+      width:calc(var(--button-box) * 0.25);
       height:calc(var(--button-box) * 0.25);
+      padding:0;
       opacity:0; transition:opacity var(--transition-duration);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer;
@@ -167,7 +171,7 @@
       font-family: var(--font-family);
       opacity: 0;
       transition: opacity var(--transition-duration);
-      padding: 10px;
+      padding: 0 10px;
       position: absolute;
       right: 15px;
       bottom: 15px;
@@ -209,7 +213,10 @@
       transform: none;
       top: auto;
       right: auto;
-      width: calc(var(--button-box) * 0.25);
+      width: auto;
+      height: calc(var(--button-box) * 0.25);
+      padding: 0 10px;
+      margin-left: 10px;
     }
     #summaryTyper {
       overflow: visible;
@@ -257,7 +264,7 @@
         <span id="month-name"></span>
         <button id="next-month">›</button>
       </div>
-      <button class="arrow" id="arrow3">Confirmer</button>
+      <button class="arrow" id="arrow3">OK</button>
     </div>
     <div class="step" data-question="Quelle heure ?" id="step4">
       <span class="typer"></span>
@@ -276,7 +283,7 @@
         <input type="text" id="lastname-input" class="text-input" placeholder="Nom">
         <input type="text" id="firstname-input" class="text-input" placeholder="Prénom">
       </div>
-      <button class="arrow" id="arrow6">Confirmer</button>
+      <button class="arrow" id="arrow6">OK</button>
     </div>
     <div class="step" id="step7">
       <span class="typer" id="summaryTyper"></span>
@@ -284,7 +291,7 @@
     <div class="step" data-question="Une info à rajouter?" id="step8">
       <span class="typer"></span>
       <input type="text" id="info-input" class="text-input" placeholder="Une table en terrasse...">
-      <button class="arrow" id="arrow8">Confirmer</button>
+      <button class="arrow" id="arrow8">OK</button>
       <button id="okBtn" class="ok-btn">Tout est OK!</button>
     </div>
     <div class="step" id="step9">
@@ -350,7 +357,11 @@
       const question = s.getAttribute('data-question');
       const typer = s.querySelector('.typer');
       if (s.id === 'step9') {
-        typeText(document.getElementById('thanksTyper'), 'Merci pour votre réservation!');
+        typeText(document.getElementById('thanksTyper'), 'Merci pour votre réservation!', () => {
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        });
         return;
       }
       const controls = s.querySelector('.controls');
