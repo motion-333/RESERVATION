@@ -125,16 +125,16 @@
       padding: 0 0.5rem;
       font-size: clamp(4vh,4vw,var(--text-size));
     }
-    .controls input[type='number'] {
-      border: none; width:4ch; background: transparent; color: var(--text-color);
-      font-size:clamp(4vh,4vw,var(--text-size)); text-align:center;
-      height:var(--button-box); line-height:var(--button-box);
-      display:flex; align-items:center; justify-content:center;
+    .slider {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
-    .controls input[type='number']::-webkit-inner-spin-button,
-    .controls input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    .controls input[type='number'] { -moz-appearance: textfield; }
-    #day-num { width: calc(var(--button-box) * 0.8); }
+    #day-num {
+      width: calc(var(--button-box) * 0.8);
+    }
     #prev-day, #next-day, #prev-month, #next-month {
       width: var(--square-size);
       height: var(--square-size);
@@ -151,6 +151,8 @@
       height: var(--button-box);
       line-height: var(--button-box);
       text-align: center;
+      position: relative;
+      overflow: hidden;
     }
     .arrow {
       position:absolute; right:var(--strip-padding);
@@ -306,10 +308,10 @@
       <span class="typer"></span>
       <div class="controls" id="controls3">
         <button id="prev-day">‹</button>
-        <input type="number" id="day-num" min="1" max="31" value="1">
+        <span id="day-num" class="slider"></span>
         <button id="next-day">›</button>
         <button id="prev-month">‹</button>
-        <span id="month-name"></span>
+        <span id="month-name" class="slider"></span>
         <button id="next-month">›</button>
       </div>
       <button class="arrow" id="arrow3">OK</button>
@@ -392,6 +394,44 @@
       setTimeout(() => { container.style.visibility = 'hidden'; cb && cb(); }, items.length * 50);
     }
 
+    function slideValue(el, newVal, dir) {
+      el.style.position = 'relative';
+      let current = el.querySelector('.value');
+      if (!current) {
+        current = document.createElement('span');
+        current.className = 'value';
+        current.textContent = el.textContent;
+        Object.assign(current.style, {
+          position: 'absolute', left: '0', top: '0', width: '100%', height: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'transform 0.3s, opacity 0.3s'
+        });
+        el.textContent = '';
+        el.appendChild(current);
+      }
+      const incoming = document.createElement('span');
+      incoming.className = 'value';
+      incoming.textContent = newVal;
+      Object.assign(incoming.style, {
+        position: 'absolute', top: '0', width: '100%', height: '100%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'transform 0.3s, opacity 0.3s',
+        left: dir === 'left' ? '100%' : '-100%', opacity: '0'
+      });
+      el.appendChild(incoming);
+      requestAnimationFrame(() => {
+        current.style.transform = `translateX(${dir === 'left' ? '-100%' : '100%'})`;
+        current.style.opacity = '0';
+        incoming.style.transform = 'translateX(0)';
+        incoming.style.opacity = '1';
+      });
+      setTimeout(() => {
+        current.remove();
+        incoming.style.left = '0';
+        incoming.style.position = 'absolute';
+      }, 300);
+    }
+
   function showStep(i) {
      steps.forEach(s => s.classList.remove('active'));
      const s = steps[i];
@@ -403,7 +443,10 @@
         summary.style.transform = 'none';
       }
       reservationDiv.scrollLeft = 0;
-      if (s.id === 'startStep') return;
+      if (s.id === 'startStep') {
+        document.getElementById('startBtn').classList.remove('fade');
+        return;
+      }
       const question = s.getAttribute('data-question');
       const typer = s.querySelector('.typer');
       if (s.id === 'step9') {
@@ -507,7 +550,7 @@
         break;
       case 3:
         delete reservation.date;
-        dayNumEl.value = now.getDate();
+        dayNumEl.textContent = now.getDate();
         m = now.getMonth();
         monthNameEl.textContent = months[m];
         updateDateArrows();
@@ -610,7 +653,7 @@
     let m = now.getMonth();
     const monthNameEl = document.getElementById('month-name');
     const dayNumEl = document.getElementById('day-num');
-    dayNumEl.value = now.getDate();
+    dayNumEl.textContent = now.getDate();
     monthNameEl.textContent = months[m];
     const prevDayBtn = document.getElementById('prev-day');
     const nextDayBtn = document.getElementById('next-day');
@@ -623,7 +666,7 @@
       } else {
         prevMonthBtn.classList.remove('disabled');
       }
-      if (m === now.getMonth() && parseInt(dayNumEl.value, 10) <= now.getDate()) {
+      if (m === now.getMonth() && parseInt(dayNumEl.textContent, 10) <= now.getDate()) {
         prevDayBtn.classList.add('disabled');
       } else {
         prevDayBtn.classList.remove('disabled');
@@ -632,29 +675,42 @@
     updateDateArrows();
 
     prevDayBtn.onclick = () => {
-      let d = parseInt(dayNumEl.value, 10);
+      let d = parseInt(dayNumEl.textContent, 10);
       if (m === now.getMonth() && d <= now.getDate()) return;
-      dayNumEl.value = d > 1 ? d - 1 : 31;
+      if (d > 1) {
+        slideValue(dayNumEl, d - 1, 'right');
+      } else {
+        if (m === now.getMonth()) return;
+        m = (m + 11) % 12;
+        slideValue(monthNameEl, months[m], 'right');
+        slideValue(dayNumEl, 31, 'right');
+      }
       updateDateArrows();
     };
     nextDayBtn.onclick = () => {
-      let d = parseInt(dayNumEl.value, 10);
-      dayNumEl.value = d < 31 ? d + 1 : 1;
+      let d = parseInt(dayNumEl.textContent, 10);
+      if (d < 31) {
+        slideValue(dayNumEl, d + 1, 'left');
+      } else {
+        m = (m + 1) % 12;
+        slideValue(monthNameEl, months[m], 'left');
+        slideValue(dayNumEl, 1, 'left');
+      }
       updateDateArrows();
     };
     prevMonthBtn.onclick = () => {
       if (m === now.getMonth()) return;
       m = (m + 11) % 12;
-      monthNameEl.textContent = months[m];
+      slideValue(monthNameEl, months[m], 'right');
       updateDateArrows();
     };
     nextMonthBtn.onclick = () => {
       m = (m + 1) % 12;
-      monthNameEl.textContent = months[m];
+      slideValue(monthNameEl, months[m], 'left');
       updateDateArrows();
     };
     document.getElementById('arrow3').addEventListener('click', () => {
-      reservation.date = `${dayNumEl.value} ${months[m]}`;
+      reservation.date = `${dayNumEl.textContent} ${months[m]}`;
       next();
     });
 
