@@ -65,14 +65,15 @@
     .name-fields {
       display:flex;
       justify-content:center;
-      gap:var(--control-gap);
+      gap: calc(var(--control-gap) / 4);
       width:100%;
     }
     #step6 .text-input {
       position: static;
       opacity: 1;
       visibility: visible;
-      width: calc(50% - var(--control-gap)/2);
+      width: calc(50% - var(--control-gap)/4);
+      border-right: none;
     }
     #step6 { justify-content: center; }
     #step8 { justify-content: center; }
@@ -96,7 +97,7 @@
     #controls3 button,
     #controls4 button,
     #controls5 button { width: var(--button-box); padding: 0; }
-    #controls5 button { font-size: calc(var(--text-size) * 0.5); }
+    #controls5 button { font-size: calc(var(--text-size) * 0.25); }
     .controls button.selected { background:var(--text-color); color:var(--bg-color); }
     .or {
       padding: 0 0.5rem;
@@ -203,6 +204,9 @@
     #summaryTyper {
       overflow: visible;
       width: fit-content;
+    }
+    #thanksTyper {
+      font-size: calc(var(--text-size) * 0.5);
     }
     .scroll {
       white-space: nowrap;
@@ -439,7 +443,7 @@
       wrapper.appendChild(input);
       const confirm = document.createElement('button');
       confirm.className = 'arrow';
-      confirm.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg>';
+      confirm.textContent = 'OK';
       wrapper.appendChild(confirm);
       c2.replaceChild(wrapper, plus);
       setTimeout(() => {
