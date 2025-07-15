@@ -74,7 +74,7 @@
       position: static;
       opacity: 1;
       visibility: visible;
-      width: calc(40% - 7.5px);
+      width: calc(20% - 7.5px);
       border-right: none;
     }
     #step6 { justify-content: center; }
@@ -150,6 +150,24 @@
       cursor:pointer;
     }
     .arrow svg { display:none; }
+    .back {
+      position: absolute;
+      left: var(--strip-padding);
+      top: var(--strip-padding);
+      width: calc(var(--button-box) * 0.25);
+      height: calc(var(--button-box) * 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--text-color);
+      background: transparent;
+      color: var(--text-color);
+      font-size: calc(var(--text-size) * 0.25);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity var(--transition-duration);
+      pointer-events: none;
+    }
     #startStep { justify-content: center; }
 
     #startBtn {
@@ -245,6 +263,7 @@
 </head>
 <body>
   <div id="reservation">
+    <button id="backBtn" class="back">&#8592;</button>
     <div class="step" id="startStep">
       <button id="startBtn">Réserver</button>
     </div>
@@ -308,6 +327,7 @@
     const reservation = {};
     const reservationDiv = document.getElementById('reservation');
     const steps = Array.from(document.querySelectorAll('.step'));
+    const backBtn = document.getElementById('backBtn');
     let idx = 0;
 
     function typeText(el, text, cb) {
@@ -349,11 +369,12 @@
       setTimeout(() => { container.style.visibility = 'hidden'; cb && cb(); }, items.length * 50);
     }
 
-   function showStep(i) {
+  function showStep(i) {
      steps.forEach(s => s.classList.remove('active'));
      const s = steps[i];
      s.classList.add('active');
-      const summary = document.getElementById('summaryTyper');
+     updateBackButton();
+     const summary = document.getElementById('summaryTyper');
       if (summary) {
         summary.classList.remove('scroll');
         summary.style.transform = 'none';
@@ -433,7 +454,20 @@
           }, 3000);
         });
       }
+      updateBackButton();
+  }
+
+  function updateBackButton() {
+    const stepId = steps[idx].id;
+    const okVisible = document.getElementById('okBtn').style.opacity === '1';
+    if (stepId === 'startStep' || stepId === 'step9' || (stepId === 'step8' && okVisible)) {
+      backBtn.style.opacity = '0';
+      backBtn.style.pointerEvents = 'none';
+    } else {
+      backBtn.style.opacity = '1';
+      backBtn.style.pointerEvents = 'auto';
     }
+  }
 
     function next() {
       const current = steps[idx];
@@ -616,6 +650,7 @@
       const inEl = document.getElementById('info-input');
       const confirm = document.getElementById('arrow8');
       const ok = document.getElementById('okBtn');
+      const typer = steps[8].querySelector('.typer');
       inEl.value = '';
       inEl.style.visibility = 'visible';
       inEl.style.opacity = '1';
@@ -626,9 +661,14 @@
         confirm.style.opacity = '0';
         inEl.style.opacity = '0';
         inEl.style.visibility = 'hidden';
-        ok.style.opacity = '1';
+        typer.style.opacity = '0';
+        updateBackButton();
+        setTimeout(() => {
+          ok.style.opacity = '1';
+        }, 400);
         ok.onclick = () => {
-          next();
+          ok.style.opacity = '0';
+          setTimeout(next, 400);
         };
       };
     }
@@ -638,6 +678,12 @@
       const b = document.getElementById('startBtn');
       b.classList.add('fade');
       setTimeout(() => { idx = 1; showStep(1); }, 400);
+    });
+    backBtn.addEventListener('click', () => {
+      if (idx > 0) {
+        idx--;
+        showStep(idx);
+      }
     });
     showStep(0);
   </script>
