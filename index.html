@@ -15,6 +15,7 @@
       --control-gap: 0.5rem;
       --transition-duration: 0.4s;
       --button-box: 18vh;
+      --square-size: 10vh;
     }
     *, *::before, *::after { box-sizing: border-box; }
     body, html {
@@ -116,6 +117,8 @@
     #controls5 button {
       padding: 0;
       font-size: calc(var(--text-size) * 0.25);
+      width: var(--square-size);
+      height: var(--square-size);
     }
     .controls button.selected { background:var(--text-color); color:var(--bg-color); }
     .or {
@@ -133,9 +136,9 @@
     .controls input[type='number'] { -moz-appearance: textfield; }
     #day-num { width: calc(var(--button-box) * 0.8); }
     #prev-day, #next-day, #prev-month, #next-month {
-      width: 10vh;
-      height: 10vh;
-      line-height: 10vh;
+      width: var(--square-size);
+      height: var(--square-size);
+      line-height: var(--square-size);
       display:flex;
       align-items:center;
       justify-content:center;
@@ -156,9 +159,9 @@
       color:var(--text-color);
       font-family:var(--font-family);
       font-size:calc(var(--text-size) * 0.25);
-      width:10vh;
-      height:10vh;
-      line-height:10vh;
+      width: var(--square-size);
+      height: var(--square-size);
+      line-height: var(--square-size);
       padding:0;
       box-sizing:border-box;
       opacity:0; transition:opacity var(--transition-duration);
@@ -207,8 +210,8 @@
       font-family: var(--font-family);
       opacity: 0;
       transition: opacity var(--transition-duration);
-      width: 10vh;
-      height: 10vh;
+      width: var(--square-size);
+      height: var(--square-size);
       padding: 0;
       position: absolute;
       right: 15px;
@@ -253,9 +256,9 @@
       top: auto;
       right: auto;
       margin-left: 10px;
-      width: 10vh;
-      height: 10vh;
-      line-height: 10vh;
+      width: var(--square-size);
+      height: var(--square-size);
+      line-height: var(--square-size);
       padding: 0;
     }
     button.disabled {
@@ -667,15 +670,8 @@
     // Step5 times
     const c5 = document.getElementById('controls5');
     function adjustTimeButtonSize() {
-      const gap = parseFloat(getComputedStyle(c5).columnGap || getComputedStyle(c5).gap || 0);
       const total = c5.children.length;
-      const available = reservationDiv.clientWidth - gap * (total - 1);
-      const size = Math.min(reservationDiv.clientHeight, available / total);
-      c5.style.gridTemplateColumns = `repeat(${total}, ${size}px)`;
-      Array.from(c5.children).forEach(btn => {
-        btn.style.width = `${size}px`;
-        btn.style.height = `${size}px`;
-      });
+      c5.style.gridTemplateColumns = `repeat(${total}, var(--square-size))`;
     }
 
     function loadTimes() {
@@ -763,6 +759,7 @@
       if (idx > 0) {
         resetStepData(idx);
         idx--;
+        resetStepData(idx);
         showStep(idx);
       }
     });
