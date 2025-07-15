@@ -142,7 +142,9 @@
       font-family:var(--font-family);
       font-size:calc(var(--text-size) * 0.25);
       height:calc(var(--button-box) * 0.25);
-      width:auto; padding:10px;
+      width:calc(var(--button-box) * 0.25);
+      padding:10px;
+      box-sizing:border-box;
       opacity:0; transition:opacity var(--transition-duration);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer;
@@ -212,9 +214,6 @@
       transform: none;
       top: auto;
       right: auto;
-      width: auto;
-      height: calc(var(--button-box) * 0.25);
-      padding: 10px;
       margin-left: 10px;
     }
     #summaryTyper {
@@ -490,9 +489,11 @@
 
     // Step3 day/month
     const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-    let m = 0;
+    const now = new Date();
+    let m = now.getMonth();
     const monthNameEl = document.getElementById('month-name');
     const dayNumEl = document.getElementById('day-num');
+    dayNumEl.value = now.getDate();
     monthNameEl.textContent = months[m];
     document.getElementById('prev-day').onclick = () => {
       let d = parseInt(dayNumEl.value, 10);
@@ -528,8 +529,15 @@
     const c5 = document.getElementById('controls5');
     function loadTimes() {
       c5.innerHTML = '';
-      const slots = [17,'30',18,'30',19,'30',20,'30',21,'30',22,'30'];
-      let lastHour = 17;
+      let slots;
+      let lastHour;
+      if (reservation.period === 'Midi') {
+        slots = [12,'30',13,'30',14,'30',15,'30',16,'30'];
+        lastHour = 12;
+      } else {
+        slots = [17,'30',18,'30',19,'30',20,'30',21,'30',22,'30'];
+        lastHour = 17;
+      }
       slots.forEach(label => {
         const b = document.createElement('button');
         b.textContent = label;
