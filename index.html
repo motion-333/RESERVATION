@@ -82,6 +82,7 @@
     #controls3 button,
     #controls4 button,
     #controls5 button { width: var(--button-box); padding: 0; }
+    #controls5 button { font-size: calc(var(--text-size) * 0.6); }
     .controls button.selected { background:var(--text-color); color:var(--bg-color); }
     .controls input[type='number'] {
       border: none; width:4ch; background: transparent; color: var(--text-color);
@@ -92,7 +93,13 @@
     .controls input[type='number']::-webkit-inner-spin-button,
     .controls input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     .controls input[type='number'] { -moz-appearance: textfield; }
-    #month-name { display: inline-block; height: var(--button-box); line-height: var(--button-box); }
+    #day-num { width: calc(var(--button-box) * 0.8); }
+    #month-name {
+      display: inline-block;
+      width: calc(var(--button-box) * 2.5);
+      height: var(--button-box);
+      line-height: var(--button-box);
+    }
     #controls5 { overflow-x:auto; scrollbar-width:thin; scrollbar-color:var(--text-color) transparent; }
     #controls5::-webkit-scrollbar { height:0.5rem; }
     #controls5::-webkit-scrollbar-thumb { background:var(--text-color); border-radius:0.25rem; }
@@ -105,10 +112,62 @@
       display:flex; align-items:center; justify-content:center;
     }
     .arrow svg { width:50%; height:50%; fill:var(--text-color); }
+    #startStep { justify-content: center; }
+
+    #startBtn {
+      width: 100%;
+      height: var(--button-box);
+      font-size: var(--text-size);
+      border: 2px solid var(--text-color);
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: opacity var(--transition-duration);
+    }
+    #startBtn.fade { opacity: 0; }
+
+    .confirm {
+      opacity: 0;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .custom-input {
+      position: relative;
+      border: 2px solid var(--text-color);
+      width: var(--button-box);
+      transition: width var(--transition-duration);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .custom-input input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      text-align: center;
+      font-size: clamp(4vh,4vw,var(--text-size));
+      height: var(--button-box);
+      outline: none;
+    }
+    .scroll {
+      white-space: nowrap;
+      display: inline-block;
+      animation: slideLeft 6s linear forwards;
+    }
+    @keyframes slideLeft {
+      from { transform: translateX(100vw); }
+      to { transform: translateX(-100%); }
+    }
   </style>
 </head>
 <body>
   <div id="reservation">
+    <div class="step" id="startStep">
+      <button id="startBtn">Réserver</button>
+    </div>
     <div class="step" data-question="Réserver:" id="step1">
       <span class="typer"></span>
       <div class="controls" id="controls1">
@@ -116,12 +175,11 @@
         <button data-value="Aux Dés Calés 18">Aux Dés Calés 18</button>
         <button data-value="Au Détour">Au Détour</button>
       </div>
-      <button class="arrow" id="arrow1"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
     <div class="step" data-question="Vous serez combien ?" id="step2">
       <span class="typer"></span>
       <div class="controls" id="controls2"></div>
-      <button class="arrow" id="arrow2"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
+      <button class="arrow confirm" id="arrow2"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
     <div class="step" data-question="Quel Jour ?" id="step3">
       <span class="typer"></span>
@@ -135,8 +193,7 @@
       </div>
       <button class="arrow" id="arrow3"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
-    <div class="step" data-question="Midi ou Soir ?" id="step4">
-      <span class="typer"></span>
+    <div class="step" id="step4">
       <div class="controls" id="controls4">
         <button data-value="Midi">Midi</button>
         <button data-value="Soir">Soir</button>
@@ -211,6 +268,7 @@
       steps.forEach(s => s.classList.remove('active'));
       const s = steps[i];
       s.classList.add('active');
+      if (s.id === 'startStep') return;
       const question = s.getAttribute('data-question');
       const typer = s.querySelector('.typer');
       const controls = s.querySelector('.controls');
@@ -220,6 +278,23 @@
         controls.querySelectorAll('*').forEach(el => el.style.opacity = '0');
       }
       if (arrow) arrow.style.opacity = '0';
+
+      if (s.id === 'step4') {
+        if (controls) {
+          controls.style.visibility = 'visible';
+          fadeInSeq(controls, () => { if (arrow && s.id !== 'step2') arrow.style.opacity = '1'; });
+        }
+        return;
+      }
+
+      if (s.id === 'step7') {
+        const sum = `Réservation ${reservation.restaurant} pour ${reservation.people} personnes le ${reservation.date} à ${reservation.time} au nom de ${reservation.lastname}, ${reservation.firstname}`;
+        const t = document.getElementById('summaryTyper');
+        t.textContent = sum;
+        t.classList.add('scroll');
+        t.addEventListener('animationend', () => { if (arrow) arrow.style.opacity = '1'; }, {once:true});
+        return;
+      }
 
       if (typer && question) {
         typer.style.opacity = '1';
@@ -242,10 +317,6 @@
             });
           }, 3000);
         });
-      } else if (s.id === 'step7') {
-        const sum = `Réservation ${reservation.restaurant} pour ${reservation.people} personnes le ${reservation.date} à ${reservation.time} au nom de ${reservation.lastname}, ${reservation.firstname}`;
-        typer.style.opacity = '1';
-        typeText(typer, sum, () => { if (arrow) arrow.style.opacity = '1'; });
       }
     }
 
@@ -283,11 +354,24 @@
     }
     const plus = document.createElement('button'); plus.textContent = '+';
     plus.addEventListener('click', () => {
-      const n = prompt('Nombre?');
-      if (n && !isNaN(n)) {
-        reservation.people = n;
-        next();
-      }
+      const wrapper = document.createElement('div');
+      wrapper.className = 'custom-input';
+      const input = document.createElement('input');
+      input.type = 'number';
+      wrapper.appendChild(input);
+      const arrow2 = document.getElementById('arrow2');
+      wrapper.appendChild(arrow2);
+      c2.replaceChild(wrapper, plus);
+      setTimeout(() => { wrapper.style.width = 'calc(var(--button-box)*2)'; arrow2.style.opacity = '1'; }, 10);
+      input.focus();
+      arrow2.onclick = () => {
+        const v = parseInt(input.value, 10);
+        if (!isNaN(v) && v > 0) {
+          reservation.people = v;
+          arrow2.style.opacity = '0';
+          next();
+        }
+      };
     });
     c2.appendChild(plus);
 
@@ -347,8 +431,8 @@
         }
       }
     }
-    steps[3].addEventListener('transitionend', () => {
-      if (steps[3].classList.contains('active')) loadTimes();
+    steps[4].addEventListener('transitionend', () => {
+      if (steps[4].classList.contains('active')) loadTimes();
     });
 
     // Step6 name input
@@ -399,6 +483,11 @@
     }
 
     // Initialize
+    document.getElementById('startBtn').addEventListener('click', () => {
+      const b = document.getElementById('startBtn');
+      b.classList.add('fade');
+      setTimeout(() => { idx = 1; showStep(1); }, 400);
+    });
     showStep(0);
   </script>
 </body>
