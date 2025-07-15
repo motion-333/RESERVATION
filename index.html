@@ -116,8 +116,8 @@
       background:transparent; border:2px solid var(--text-color);
       color:var(--text-color);
       font-family:var(--font-family);
-      font-size:clamp(4vh,4vw,var(--text-size));
-      width:calc(var(--button-box) * 1.5); height:var(--button-box);
+      font-size:calc(var(--text-size) * 0.5);
+      width:calc(var(--button-box) * 0.75); height:calc(var(--button-box) * 0.75);
       opacity:0; transition:opacity var(--transition-duration);
       display:flex; align-items:center; justify-content:center;
       cursor:pointer;
@@ -126,17 +126,12 @@
     #startStep { justify-content: center; }
 
     #startBtn {
-      height: var(--button-box);
       font-size: var(--text-size);
-      border: 2px solid var(--text-color);
       background: transparent;
       color: var(--text-color);
-      padding: 0 1rem;
+      border: none;
       cursor: pointer;
       transition: opacity var(--transition-duration);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-family: var(--font-family);
     }
     #startBtn.fade { opacity: 0; }
@@ -152,11 +147,13 @@
       position: relative;
       border: 2px solid var(--text-color);
       width: var(--button-box);
+      height: var(--button-box);
       transition: width var(--transition-duration);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: var(--control-gap);
+      opacity: 1;
     }
     .custom-input input {
       width: 100%;
@@ -170,7 +167,11 @@
     }
     .custom-input .arrow {
       position: static;
-      width: var(--button-box);
+      width: calc(var(--button-box) * 0.75);
+    }
+    #summaryTyper {
+      overflow: visible;
+      width: fit-content;
     }
     .scroll {
       white-space: nowrap;
@@ -219,11 +220,9 @@
         <span class="or">ou</span>
         <button data-value="Soir">Soir</button>
       </div>
-      <button class="arrow" id="arrow4">Confirmer</button>
     </div>
     <div class="step" id="step5">
       <div class="controls" id="controls5"></div>
-      <button class="arrow" id="arrow5">Confirmer</button>
     </div>
     <div class="step" data-question="À quel nom ?" id="step6">
       <span class="typer"></span>
@@ -236,7 +235,7 @@
     </div>
     <div class="step" data-question="Une info à rajouter?:" id="step8">
       <span class="typer"></span>
-      <span class="invisible-input" id="input8"></span>
+      <input type="text" id="info-input" class="text-input" placeholder="Une table en terrasse...">
       <button class="arrow" id="arrow8">Confirmer</button>
     </div>
   </div>
@@ -394,6 +393,7 @@
     plus.addEventListener('click', () => {
       const wrapper = document.createElement('div');
       wrapper.className = 'custom-input';
+      wrapper.style.opacity = '1';
       const input = document.createElement('input');
       input.type = 'number';
       wrapper.appendChild(input);
@@ -473,9 +473,6 @@
         }
       }
     }
-    steps[5].addEventListener('transitionend', () => {
-      if (steps[5].classList.contains('active')) loadTimes();
-    });
 
     // Step6 name input
    function initNameStep() {
@@ -500,24 +497,16 @@
     document.getElementById('arrow7').addEventListener('click', next);
 
     // Step8 info input
-    let infoInput = '';
-   function initInfoStep() {
-     const inEl = document.getElementById('input8');
-     inEl.textContent = '';
-     inEl.style.borderRight = '';
+    function initInfoStep() {
+      const inEl = document.getElementById('info-input');
+      inEl.value = '';
       inEl.style.visibility = 'visible';
       inEl.style.opacity = '1';
-     inEl.focus();
-     inEl.addEventListener('keydown', e => {
-       if (e.key.length === 1) {
-         infoInput += e.key;
-         inEl.textContent = infoInput;
-       }
-      });
+      inEl.focus();
       const arrow8 = document.getElementById('arrow8');
       arrow8.style.opacity = '1';
       arrow8.onclick = () => {
-        reservation.comment = infoInput;
+        reservation.comment = inEl.value.trim();
         inEl.style.opacity = '0';
         inEl.style.visibility = 'hidden';
         alert('Votre réservation: ' + JSON.stringify(reservation));
