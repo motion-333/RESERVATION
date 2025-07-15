@@ -98,7 +98,11 @@
     #controls2 button,
     #controls3 button,
     #controls4 button,
-    #controls5 button { width: var(--button-box); padding: 0; }
+    #controls5 button {
+      width: var(--button-box);
+      height: var(--button-box);
+      padding: 0;
+    }
     #controls5 button { font-size: calc(var(--text-size) * 0.25); }
     .controls button.selected { background:var(--text-color); color:var(--bg-color); }
     .or {
@@ -116,9 +120,9 @@
     .controls input[type='number'] { -moz-appearance: textfield; }
     #day-num { width: calc(var(--button-box) * 0.8); }
     #prev-day, #next-day, #prev-month, #next-month {
-      width: calc(var(--button-box) * 0.5);
-      height: calc(var(--button-box) * 0.5);
-      line-height: calc(var(--button-box) * 0.5);
+      width: 10vh;
+      height: 10vh;
+      line-height: 10vh;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -142,9 +146,9 @@
       color:var(--text-color);
       font-family:var(--font-family);
       font-size:calc(var(--text-size) * 0.25);
-      height:calc(var(--button-box) * 0.35);
-      width:calc(var(--button-box) * 0.35);
-      line-height:calc(var(--button-box) * 0.35);
+      width:10vh;
+      height:10vh;
+      line-height:10vh;
       padding:0;
       box-sizing:border-box;
       opacity:0; transition:opacity var(--transition-duration);
@@ -192,8 +196,8 @@
       font-family: var(--font-family);
       opacity: 0;
       transition: opacity var(--transition-duration);
-      width: calc(var(--button-box) * 0.5);
-      height: calc(var(--button-box) * 0.5);
+      width: 10vh;
+      height: 10vh;
       padding: 0;
       position: absolute;
       right: 15px;
@@ -238,8 +242,9 @@
       top: auto;
       right: auto;
       margin-left: 10px;
-      width: calc(var(--button-box) * 0.25);
-      height: calc(var(--button-box) * 0.25);
+      width: 10vh;
+      height: 10vh;
+      line-height: 10vh;
       padding: 0;
     }
     button.disabled {
@@ -507,9 +512,6 @@
       case 6:
         delete reservation.lastname;
         delete reservation.firstname;
-        nameInit = false;
-        document.getElementById('lastname-input').value = '';
-        document.getElementById('firstname-input').value = '';
         break;
       case 8:
         delete reservation.comment;
@@ -683,14 +685,9 @@
     }
 
     // Step6 name input
-   let nameInit = false;
    function initNameStep() {
      const last = document.getElementById('lastname-input');
      const first = document.getElementById('firstname-input');
-     if (!nameInit) {
-       [last, first].forEach(el => { el.value = ''; });
-       nameInit = true;
-     }
      [last, first].forEach(el => { el.style.visibility = 'visible'; el.style.opacity = '1'; });
      last.focus();
      const arrow6 = document.getElementById('arrow6');
