@@ -81,7 +81,7 @@
     #step6 { justify-content: center; }
     #stepContact .text-input {
       position: static;
-      width: calc(20% - 7.5px);
+      width: calc(40% - 7.5px);
       border-right: none;
     }
     #stepContact { justify-content: center; }
@@ -148,6 +148,8 @@
       display:flex;
       align-items:center;
       justify-content:center;
+      padding: 0;
+      border: 2px solid var(--text-color);
     }
     #month-name {
       display: inline-flex;
@@ -526,9 +528,12 @@
                 const inputs = s.querySelectorAll('.text-input');
                 inputs.forEach(inp => { inp.style.visibility = 'visible'; inp.style.opacity = '1'; });
                 if (arrow) arrow.style.opacity = '1';
+                initContactStep();
               });
             }, 3000);
           });
+        } else {
+          initContactStep();
         }
         return;
       } else {
