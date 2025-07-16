@@ -252,6 +252,14 @@
       height: var(--button-box);
       outline: none;
     }
+    .custom-input input::-webkit-inner-spin-button,
+    .custom-input input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .custom-input input {
+      -moz-appearance: textfield;
+    }
     .custom-input .arrow {
       position: static;
       transform: none;
@@ -623,7 +631,9 @@
         wrapper.className = 'custom-input';
         wrapper.style.opacity = '1';
         const input = document.createElement('input');
-        input.type = 'number';
+        input.type = 'text';
+        input.inputMode = 'numeric';
+        input.pattern = '[0-9]*';
         wrapper.appendChild(input);
         const confirm = document.createElement('button');
         confirm.className = 'arrow';
