@@ -79,6 +79,12 @@
       border-right: none;
     }
     #step6 { justify-content: center; }
+    #stepContact .text-input {
+      position: static;
+      width: calc(20% - 7.5px);
+      border-right: none;
+    }
+    #stepContact { justify-content: center; }
     #step8 { justify-content: center; }
     .controls {
       position:absolute;
@@ -346,6 +352,14 @@
     <div class="step" id="step7">
       <span class="typer" id="summaryTyper"></span>
     </div>
+    <div class="step" data-question="Pour vous contacter" id="stepContact">
+      <span class="typer"></span>
+      <div class="name-fields">
+        <input type="text" id="email-input" class="text-input" placeholder="Email">
+        <input type="text" id="phone-input" class="text-input" placeholder="Téléphone">
+      </div>
+      <button class="arrow" id="arrowContact">OK</button>
+    </div>
     <div class="step" data-question="Une info à rajouter?" id="step8">
       <span class="typer"></span>
       <input type="text" id="info-input" class="text-input" placeholder="Une table en terrasse...">
@@ -421,10 +435,11 @@
       incoming.className = 'value';
       incoming.textContent = newVal;
       Object.assign(incoming.style, {
-        position: 'absolute', top: '0', width: '100%', height: '100%',
+        position: 'absolute', left: '0', top: '0', width: '100%', height: '100%',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'transform 0.3s, opacity 0.3s',
-        left: dir === 'left' ? '100%' : '-100%', opacity: '0'
+        transform: `translateX(${dir === 'left' ? '100%' : '-100%'})`,
+        opacity: '0',
+        transition: 'transform 0.3s, opacity 0.3s'
       });
       el.appendChild(incoming);
       requestAnimationFrame(() => {
@@ -435,8 +450,6 @@
       });
       setTimeout(() => {
         current.remove();
-        incoming.style.left = '0';
-        incoming.style.position = 'absolute';
       }, 300);
     }
 
@@ -503,6 +516,21 @@
         t.classList.add('scroll');
         t.addEventListener('animationend', () => next(), {once:true});
         return;
+      } else if (s.id === 'stepContact') {
+        if (typer && question) {
+          typer.style.opacity = '1';
+          typeText(typer, question, () => {
+            setTimeout(() => {
+              typeOut(typer, () => {
+                typer.style.opacity = '0';
+                const inputs = s.querySelectorAll('.text-input');
+                inputs.forEach(inp => { inp.style.visibility = 'visible'; inp.style.opacity = '1'; });
+                if (arrow) arrow.style.opacity = '1';
+              });
+            }, 3000);
+          });
+        }
+        return;
       } else {
         reservationDiv.style.overflowX = 'auto';
       }
@@ -544,41 +572,46 @@
   }
 
   function resetStepData(stepIdx) {
-    switch (stepIdx) {
-      case 1:
+    const sid = steps[stepIdx].id;
+    switch (sid) {
+      case 'step1':
         delete reservation.restaurant;
         document.querySelectorAll('#controls1 button').forEach(b => {
           b.classList.remove('selected');
           b.style.opacity = '1';
         });
         break;
-      case 2:
+      case 'step2':
         delete reservation.people;
         createControls2();
         break;
-      case 3:
+      case 'step3':
         delete reservation.date;
         dayNumEl.textContent = now.getDate();
         m = now.getMonth();
         monthNameEl.textContent = months[m];
         updateDateArrows();
         break;
-      case 4:
+      case 'step4':
         delete reservation.period;
         controls4.querySelectorAll('button').forEach(b => {
           b.classList.remove('selected');
           b.style.opacity = '1';
         });
         break;
-      case 5:
+      case 'step5':
         delete reservation.time;
         c5.innerHTML = '';
         break;
-      case 6:
+      case 'step6':
         delete reservation.lastname;
         delete reservation.firstname;
         break;
-      case 8:
+      case 'stepContact':
+        delete reservation.email;
+        delete reservation.phone;
+        break;
+      case 'step8':
         delete reservation.comment;
         document.getElementById('info-input').value = '';
         document.getElementById('okBtn').style.opacity = '0';
@@ -771,20 +804,35 @@
     }
 
     // Step6 name input
-   function initNameStep() {
-     const last = document.getElementById('lastname-input');
-     const first = document.getElementById('firstname-input');
+  function initNameStep() {
+    const last = document.getElementById('lastname-input');
+    const first = document.getElementById('firstname-input');
      [last, first].forEach(el => { el.style.visibility = 'visible'; el.style.opacity = '1'; });
      last.focus();
      const arrow6 = document.getElementById('arrow6');
      arrow6.style.opacity = '1';
-     arrow6.onclick = () => {
-       reservation.lastname = last.value.trim();
-       reservation.firstname = first.value.trim();
-       [last, first].forEach(el => { el.style.opacity = '0'; el.style.visibility = 'hidden'; });
-       next();
-     };
-   }
+    arrow6.onclick = () => {
+      reservation.lastname = last.value.trim();
+      reservation.firstname = first.value.trim();
+      [last, first].forEach(el => { el.style.opacity = '0'; el.style.visibility = 'hidden'; });
+      next();
+    };
+  }
+
+  function initContactStep() {
+    const email = document.getElementById('email-input');
+    const phone = document.getElementById('phone-input');
+    [email, phone].forEach(el => { el.style.visibility = 'visible'; el.style.opacity = '1'; });
+    email.focus();
+    const arrow = document.getElementById('arrowContact');
+    arrow.style.opacity = '1';
+    arrow.onclick = () => {
+      reservation.email = email.value.trim();
+      reservation.phone = phone.value.trim();
+      [email, phone].forEach(el => { el.style.opacity = '0'; el.style.visibility = 'hidden'; });
+      next();
+    };
+  }
 
 
     // Step8 info input
@@ -792,7 +840,7 @@
       const inEl = document.getElementById('info-input');
       const confirm = document.getElementById('arrow8');
       const ok = document.getElementById('okBtn');
-      const typer = steps[8].querySelector('.typer');
+      const typer = steps[9].querySelector('.typer');
       inEl.value = '';
       inEl.style.visibility = 'visible';
       inEl.style.opacity = '1';
