@@ -159,8 +159,9 @@
       width: 60%;
       height: 60%;
       fill: var(--text-color);
+      transform: rotate(180deg);
     }
-    .date-arrow.right svg { transform: rotate(180deg); }
+    .date-arrow.right svg { transform: rotate(0); }
     #month-name {
       display: inline-flex;
       align-items: center;
@@ -212,6 +213,7 @@
       width: 60%;
       height: 60%;
       fill: var(--text-color);
+      transform: rotate(180deg);
     }
     #startStep { justify-content: center; }
 
@@ -305,7 +307,7 @@
     .scroll {
       white-space: nowrap;
       display: inline-block;
-      animation: slideLeft 10s linear forwards;
+      animation: slideLeft 5s linear forwards;
       pointer-events: none;
     }
     @keyframes slideLeft {
@@ -316,7 +318,7 @@
 </head>
 <body>
   <div id="reservation">
-    <button id="backBtn" class="back"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
+    <button id="backBtn" class="back"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     <div class="step" id="startStep">
       <button id="startBtn">Réserver</button>
     </div>
@@ -335,12 +337,12 @@
     <div class="step" data-question="Quel Jour ?" id="step3">
       <span class="typer"></span>
       <div class="controls" id="controls3">
-        <button id="prev-day" class="date-arrow"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
+        <button id="prev-day" class="date-arrow"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
         <span id="day-num" class="slider"></span>
-        <button id="next-day" class="date-arrow right"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
-        <button id="prev-month" class="date-arrow"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
+        <button id="next-day" class="date-arrow right"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
+        <button id="prev-month" class="date-arrow"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
         <span id="month-name" class="slider"></span>
-        <button id="next-month" class="date-arrow right"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
+        <button id="next-month" class="date-arrow right"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
       </div>
       <button class="arrow" id="arrow3">OK</button>
     </div>
