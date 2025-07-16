@@ -145,7 +145,7 @@
     #day-num {
       width: calc(var(--button-box) * 0.8);
     }
-    .date-arrow {
+    .nav-arrow {
       width: var(--square-size);
       height: var(--square-size);
       display:flex;
@@ -156,12 +156,12 @@
       background: transparent;
       color: var(--text-color);
     }
-    .date-arrow img {
+    .nav-arrow img {
       width: 60%;
       height: 60%;
       transform: rotate(180deg);
     }
-    .date-arrow.right img { transform: rotate(0); }
+    .nav-arrow.right img { transform: rotate(0); }
     #month-name {
       display: inline-flex;
       align-items: center;
@@ -339,12 +339,12 @@
     <div class="step" data-question="Quel Jour ?" id="step3">
       <span class="typer"></span>
       <div class="controls" id="controls3">
-        <button id="prev-day" class="date-arrow"><img src="/static/reserver/arrow.svg" alt=""/></button>
+        <button id="prev-day" class="nav-arrow"><img src="/static/reserver/arrow.svg" alt=""/></button>
         <span id="day-num" class="slider"></span>
-        <button id="next-day" class="date-arrow right"><img src="/static/reserver/arrow.svg" alt=""/></button>
-        <button id="prev-month" class="date-arrow"><img src="/static/reserver/arrow.svg" alt=""/></button>
+        <button id="next-day" class="nav-arrow right"><img src="/static/reserver/arrow.svg" alt=""/></button>
+        <button id="prev-month" class="nav-arrow"><img src="/static/reserver/arrow.svg" alt=""/></button>
         <span id="month-name" class="slider"></span>
-        <button id="next-month" class="date-arrow right"><img src="/static/reserver/arrow.svg" alt=""/></button>
+        <button id="next-month" class="nav-arrow right"><img src="/static/reserver/arrow.svg" alt=""/></button>
       </div>
       <button class="arrow" id="arrow3"><img src="/static/reserver/arrow.svg" alt=""/></button>
     </div>
@@ -370,7 +370,7 @@
     <div class="step" id="step7">
       <span class="typer" id="summaryTyper"></span>
     </div>
-    <div class="step" data-question="Pour vous contacter" id="stepContact">
+    <div class="step" data-question="Comment vous contacter ?" id="stepContact">
       <span class="typer"></span>
       <div class="name-fields">
         <input type="text" id="email-input" class="text-input" placeholder="Email">
