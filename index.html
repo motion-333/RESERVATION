@@ -322,7 +322,7 @@
 </head>
 <body>
   <div id="reservation">
-    <button id="backBtn" class="back"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
+    <button id="backBtn" class="back"><svg viewBox="0 0 24 24"><path d="M16 5l-8 7 8 7"/></svg></button>
     <div class="step" id="startStep">
       <button id="startBtn">Réserver</button>
     </div>
@@ -484,6 +484,7 @@
       if (summary) {
         summary.classList.remove('scroll');
         summary.style.transform = 'none';
+        summary.textContent = '';
       }
       reservationDiv.scrollLeft = 0;
       if (s.id === 'startStep') {
@@ -544,7 +545,12 @@
         const t = document.getElementById('summaryTyper');
         t.textContent = sum;
         t.classList.add('scroll');
-        t.addEventListener('animationend', () => next(), {once:true});
+        t.addEventListener('animationend', () => {
+          t.classList.remove('scroll');
+          t.style.transform = 'none';
+          t.textContent = '';
+          next();
+        }, {once:true});
         return;
       } else if (s.id === 'stepContact') {
         if (typer && question) {
