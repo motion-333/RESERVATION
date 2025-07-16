@@ -179,7 +179,6 @@
       background:transparent; border:2px solid var(--text-color);
       color:var(--text-color);
       font-family:var(--font-family);
-      font-size:calc(var(--text-size) * 0.25);
       width: var(--square-size);
       height: var(--square-size);
       line-height: var(--square-size);
@@ -189,7 +188,12 @@
       display:flex; align-items:center; justify-content:center;
       cursor:pointer;
     }
-    .arrow svg { display:none; }
+    .arrow svg {
+      width:60%;
+      height:60%;
+      fill:var(--text-color);
+      display:block;
+    }
     .back {
       position: absolute;
       left: var(--strip-padding);
@@ -307,7 +311,7 @@
     .scroll {
       white-space: nowrap;
       display: inline-block;
-      animation: slideLeft 5s linear forwards;
+      animation: slideLeft 10s linear forwards;
       pointer-events: none;
     }
     @keyframes slideLeft {
@@ -344,7 +348,7 @@
         <span id="month-name" class="slider"></span>
         <button id="next-month" class="date-arrow right"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
       </div>
-      <button class="arrow" id="arrow3">OK</button>
+      <button class="arrow" id="arrow3"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
     <div class="step" data-question="Quelle heure ?" id="step4">
       <span class="typer"></span>
@@ -363,7 +367,7 @@
         <input type="text" id="lastname-input" class="text-input" placeholder="Nom">
         <input type="text" id="firstname-input" class="text-input" placeholder="Prénom">
       </div>
-      <button class="arrow" id="arrow6">OK</button>
+      <button class="arrow" id="arrow6"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
     <div class="step" id="step7">
       <span class="typer" id="summaryTyper"></span>
@@ -374,12 +378,12 @@
         <input type="text" id="email-input" class="text-input" placeholder="Email">
         <input type="text" id="phone-input" class="text-input" placeholder="Téléphone">
       </div>
-      <button class="arrow" id="arrowContact">OK</button>
+      <button class="arrow" id="arrowContact"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
     <div class="step" data-question="Une info à rajouter?" id="step8">
       <span class="typer"></span>
       <input type="text" id="info-input" class="text-input" placeholder="Une table en terrasse...">
-      <button class="arrow" id="arrow8">OK</button>
+      <button class="arrow" id="arrow8"><svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg></button>
     </div>
     <div class="step" id="step9">
       <span class="typer clickable" id="finalOkTyper"></span>
@@ -697,7 +701,7 @@
         wrapper.appendChild(input);
         const confirm = document.createElement('button');
         confirm.className = 'arrow';
-        confirm.textContent = 'OK';
+        confirm.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5l8 7-8 7"/></svg>';
         wrapper.appendChild(confirm);
         c2.replaceChild(wrapper, plus);
         setTimeout(() => {
