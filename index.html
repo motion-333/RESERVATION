@@ -145,16 +145,22 @@
     #day-num {
       width: calc(var(--button-box) * 0.8);
     }
-    #prev-day, #next-day, #prev-month, #next-month {
+    .date-arrow {
       width: var(--square-size);
       height: var(--square-size);
-      line-height: var(--square-size);
       display:flex;
       align-items:center;
       justify-content:center;
       padding: 0;
       border: 2px solid var(--text-color);
+      background: transparent;
     }
+    .date-arrow svg {
+      width: 60%;
+      height: 60%;
+      fill: var(--text-color);
+    }
+    .date-arrow.right svg { transform: rotate(180deg); }
     #month-name {
       display: inline-flex;
       align-items: center;
@@ -201,6 +207,11 @@
       transition: opacity var(--transition-duration);
       pointer-events: none;
       z-index: 10;
+    }
+    .back svg {
+      width: 60%;
+      height: 60%;
+      fill: var(--text-color);
     }
     #startStep { justify-content: center; }
 
@@ -305,7 +316,7 @@
 </head>
 <body>
   <div id="reservation">
-    <button id="backBtn" class="back">&#8592;</button>
+    <button id="backBtn" class="back"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
     <div class="step" id="startStep">
       <button id="startBtn">Réserver</button>
     </div>
@@ -324,12 +335,12 @@
     <div class="step" data-question="Quel Jour ?" id="step3">
       <span class="typer"></span>
       <div class="controls" id="controls3">
-        <button id="prev-day">‹</button>
+        <button id="prev-day" class="date-arrow"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
         <span id="day-num" class="slider"></span>
-        <button id="next-day">›</button>
-        <button id="prev-month">‹</button>
+        <button id="next-day" class="date-arrow right"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
+        <button id="prev-month" class="date-arrow"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
         <span id="month-name" class="slider"></span>
-        <button id="next-month">›</button>
+        <button id="next-month" class="date-arrow right"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
       </div>
       <button class="arrow" id="arrow3">OK</button>
     </div>
@@ -716,6 +727,7 @@
     const nextDayBtn = document.getElementById('next-day');
     const prevMonthBtn = document.getElementById('prev-month');
     const nextMonthBtn = document.getElementById('next-month');
+    let dateCooldown = false;
 
     function updateDateArrows() {
       if (m === now.getMonth()) {
@@ -731,7 +743,14 @@
     }
     updateDateArrows();
 
-    prevDayBtn.onclick = () => {
+    function withDateCooldown(fn) {
+      if (dateCooldown) return;
+      dateCooldown = true;
+      fn();
+      setTimeout(() => (dateCooldown = false), 1000);
+    }
+
+    prevDayBtn.onclick = () => withDateCooldown(() => {
       let d = parseInt(dayNumEl.textContent, 10);
       if (m === now.getMonth() && d <= now.getDate()) return;
       if (d > 1) {
@@ -743,8 +762,8 @@
         slideValue(dayNumEl, 31, 'right');
       }
       updateDateArrows();
-    };
-    nextDayBtn.onclick = () => {
+    });
+    nextDayBtn.onclick = () => withDateCooldown(() => {
       let d = parseInt(dayNumEl.textContent, 10);
       if (d < 31) {
         slideValue(dayNumEl, d + 1, 'left');
@@ -754,18 +773,18 @@
         slideValue(dayNumEl, 1, 'left');
       }
       updateDateArrows();
-    };
-    prevMonthBtn.onclick = () => {
+    });
+    prevMonthBtn.onclick = () => withDateCooldown(() => {
       if (m === now.getMonth()) return;
       m = (m + 11) % 12;
       slideValue(monthNameEl, months[m], 'right');
       updateDateArrows();
-    };
-    nextMonthBtn.onclick = () => {
+    });
+    nextMonthBtn.onclick = () => withDateCooldown(() => {
       m = (m + 1) % 12;
       slideValue(monthNameEl, months[m], 'left');
       updateDateArrows();
-    };
+    });
     document.getElementById('arrow3').addEventListener('click', () => {
       reservation.date = `${dayNumEl.textContent} ${months[m]}`;
       next();
@@ -826,8 +845,13 @@
      const arrow6 = document.getElementById('arrow6');
      arrow6.style.opacity = '1';
     arrow6.onclick = () => {
-      reservation.lastname = last.value.trim();
-      reservation.firstname = first.value.trim();
+      const ln = last.value.trim();
+      const fn = first.value.trim();
+      if (!ln || !fn) {
+        return;
+      }
+      reservation.lastname = ln;
+      reservation.firstname = fn;
       [last, first].forEach(el => { el.style.opacity = '0'; el.style.visibility = 'hidden'; });
       next();
     };
@@ -841,8 +865,13 @@
     const arrow = document.getElementById('arrowContact');
     arrow.style.opacity = '1';
     arrow.onclick = () => {
-      reservation.email = email.value.trim();
-      reservation.phone = phone.value.trim();
+      const em = email.value.trim();
+      const ph = phone.value.trim();
+      if (!em || !ph) {
+        return;
+      }
+      reservation.email = em;
+      reservation.phone = ph;
       [email, phone].forEach(el => { el.style.opacity = '0'; el.style.visibility = 'hidden'; });
       next();
     };
