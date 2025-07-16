@@ -44,8 +44,8 @@
       height: var(--button-box); line-height: var(--button-box);
       border-right:2px solid var(--text-color);
       display:flex; align-items:center; justify-content:center;
-      flex:1;
-      pointer-events:none;
+      flex:1; width:100%;
+      pointer-events:none; text-align:center;
     }
     .invisible-input {
       position:absolute; left:0; top:0; width:100%; height:100%;
@@ -103,10 +103,14 @@
     }
     .controls button { border:2px solid var(--text-color); padding:0 1rem; }
     #controls2 button,
-    #controls3 button,
     #controls4 button {
       width: var(--button-box);
       height: var(--button-box);
+      padding: 0;
+    }
+    #controls3 button {
+      width: var(--square-size);
+      height: var(--square-size);
       padding: 0;
     }
     #controls5 {
@@ -211,23 +215,20 @@
     }
     #startBtn.fade { opacity: 0; }
 
-    .ok-btn {
-      font-size: calc(var(--text-size) * 0.5);
+    #step9 { justify-content: center; }
+    #finalOkBtn {
+      font-size: var(--text-size);
       background: transparent;
       color: var(--text-color);
-      border: 2px solid var(--text-color);
+      border: none;
       cursor: pointer;
       font-family: var(--font-family);
       opacity: 0;
       transition: opacity var(--transition-duration);
-      width: var(--square-size);
-      height: var(--square-size);
-      padding: 0;
-      position: absolute;
-      right: 15px;
-      bottom: 15px;
-      box-sizing: border-box;
-      }
+    }
+    .clickable { pointer-events:auto; cursor:pointer; }
+
+
 
     .confirm {
       opacity: 0;
@@ -366,9 +367,11 @@
       <span class="typer"></span>
       <input type="text" id="info-input" class="text-input" placeholder="Une table en terrasse...">
       <button class="arrow" id="arrow8">OK</button>
-      <button id="okBtn" class="ok-btn">Tout est OK!</button>
     </div>
     <div class="step" id="step9">
+      <span class="typer clickable" id="finalOkTyper"></span>
+    </div>
+    <div class="step" id="step10">
       <span class="typer" id="thanksTyper"></span>
     </div>
   </div>
@@ -472,11 +475,19 @@
       }
       const question = s.getAttribute('data-question');
       const typer = s.querySelector('.typer');
-      if (s.id === 'step9') {
+      if (s.id === 'step10') {
         typeText(document.getElementById('thanksTyper'), 'Merci pour votre réservation!', () => {
           setTimeout(() => {
             window.location.reload();
           }, 2000);
+        });
+        return;
+      } else if (s.id === 'step9') {
+        const btn = document.getElementById('finalOkTyper');
+        btn.textContent = '';
+        typeText(btn, 'Tout est OK!', () => {
+          btn.classList.add('clickable');
+          btn.addEventListener('click', () => next(), { once: true });
         });
         return;
       }
@@ -566,8 +577,7 @@
 
   function updateBackButton() {
     const stepId = steps[idx].id;
-    const okVisible = document.getElementById('okBtn').style.opacity === '1';
-    if (stepId === 'startStep' || stepId === 'step9' || (stepId === 'step8' && okVisible)) {
+    if (stepId === 'startStep' || stepId === 'step10') {
       backBtn.style.opacity = '0';
       backBtn.style.pointerEvents = 'none';
     } else {
@@ -619,7 +629,6 @@
       case 'step8':
         delete reservation.comment;
         document.getElementById('info-input').value = '';
-        document.getElementById('okBtn').style.opacity = '0';
         document.getElementById('arrow8').style.opacity = '1';
         break;
       default:
@@ -844,8 +853,6 @@
   function initInfoStep() {
       const inEl = document.getElementById('info-input');
       const confirm = document.getElementById('arrow8');
-      const ok = document.getElementById('okBtn');
-      const typer = steps[9].querySelector('.typer');
       inEl.value = '';
       inEl.style.visibility = 'visible';
       inEl.style.opacity = '1';
@@ -856,15 +863,7 @@
         confirm.style.opacity = '0';
         inEl.style.opacity = '0';
         inEl.style.visibility = 'hidden';
-        typer.style.opacity = '0';
-        updateBackButton();
-        setTimeout(() => {
-          ok.style.opacity = '1';
-        }, 400);
-        ok.onclick = () => {
-          ok.style.opacity = '0';
-          setTimeout(next, 400);
-        };
+        setTimeout(next, 400);
       };
   }
 
