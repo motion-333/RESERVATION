@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Réservation</title>
+  <style>
+    :root {
+      --font-family: 'Futura', sans-serif;
+      --text-color: #b20000;
+      --bg-color: #f1ede2;
+      --strip-height: 20vh;
+      --strip-padding: 1rem;
+      --text-size: clamp(8vh, 10vw, 18vh);
+      --control-gap: 0.5rem;
+      --transition-duration: 0.4s;
+      --button-box: 18vh;
+      --square-size: 10vh;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body, html {
+      margin: 0; padding: 0 2vw; height: 100%; background: var(--bg-color);
+      font-family: var(--font-family); color: var(--text-color);
+    }
+    #reservation {
+      position: absolute; top:50%; left:50%; transform: translate(-50%,-50%);
+      width: 100%; height: var(--strip-height);
+      display: flex; align-items: center; padding: 0 var(--strip-padding);
+      background: var(--bg-color);
+      overflow-x: auto;
+    }
+    .step {
+      position: absolute; top:0; left:0;
+      width:100%; height:100%; display:flex; align-items:center;
+      opacity:0; visibility:hidden;
+      transition:opacity var(--transition-duration);
+      gap: var(--control-gap);
+      justify-content: flex-start;
+      pointer-events: none;
+    }
+    .step.active { opacity:1; visibility:visible; pointer-events: auto; }
+    .typer, .invisible-input {
+      font-size: var(--text-size); white-space:nowrap; overflow:hidden;
+      height: var(--button-box); line-height: var(--button-box);
+      border-right:2px solid var(--text-color);
+      display:flex; align-items:center; justify-content:center;
+      flex:1; width:100%;
+      pointer-events:none; text-align:center;
+    }
+    .invisible-input {
+      position:absolute; left:0; top:0; width:100%; height:100%;
+      display:flex; align-items:center; justify-content:center;
+      opacity: 0; visibility:hidden;
+      transition: opacity var(--transition-duration);
+    }
+    .text-input {
+      position:absolute; left:0; top:0; width:100%; height:100%;
+      background: transparent; color: var(--text-color);
+      font-family: var(--font-family); font-size:clamp(4vh,4vw,var(--text-size));
+      line-height: var(--button-box);
+      border: none; border-right: 2px solid var(--text-color); outline: none;
+      opacity: 0; visibility:hidden;
+      transition: opacity var(--transition-duration);
+      display:flex; align-items:center; justify-content:center;
+      text-align:center;
+    }
+    .text-input::placeholder { color: var(--text-color); opacity: 0.6; }
+    .name-fields {
+      display:flex;
+      justify-content:center;
+      gap: 15px;
+      width:100%;
+    }
+    #step6 .text-input {
+      position: static;
+      opacity: 1;
+      visibility: visible;
+      width: calc(20% - 7.5px);
+      border-right: none;
+    }
+    #step6 { justify-content: center; }
+    #stepContact .text-input {
+      position: static;
+      width: calc(40% - 7.5px);
+      border-right: none;
+    }
+    #stepContact { justify-content: center; }
+    #step8 { justify-content: center; }
+    .controls {
+      position:absolute;
+      left:0; top:0; width:100%; height:100%;
+      display:flex; align-items:center; gap:var(--control-gap);
+      justify-content:center;
+      visibility:hidden;
+    }
+    .controls > * {
+      background:transparent; color:var(--text-color);
+      font-family:var(--font-family);
+      font-size:clamp(4vh,4vw,var(--text-size));
+      height:var(--button-box); opacity:0;
+      transition:opacity var(--transition-duration);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .controls button { border:2px solid var(--text-color); padding:0 1rem; }
+    #controls2 button,
+    #controls4 button {
+      width: var(--button-box);
+      height: var(--button-box);
+      padding: 0;
+    }
+    #controls3 button {
+      width: var(--square-size);
+      height: var(--square-size);
+      padding: 0;
+    }
+    #controls5 {
+      display: grid;
+      width: 100%;
+      gap: var(--control-gap);
+      justify-content: center;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--text-color) transparent;
+    }
+    #controls5::-webkit-scrollbar { height:0.5rem; }
+    #controls5::-webkit-scrollbar-thumb { background:var(--text-color); border-radius:0.25rem; }
+    #controls5 button {
+      padding: 0;
+      font-size: calc(var(--text-size) * 0.25);
+      width: var(--square-size);
+      height: var(--square-size);
+    }
+    .controls button.selected { background:var(--text-color); color:var(--bg-color); }
+    .or {
+      padding: 0 0.5rem;
+      font-size: clamp(4vh,4vw,var(--text-size));
+    }
+    .slider {
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #day-num {
+      width: calc(var(--button-box) * 0.8);
+    }
+    .nav-arrow {
+      width: var(--square-size);
+      height: var(--square-size);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 0;
+      border: 2px solid var(--text-color);
+      background: transparent;
+      color: var(--text-color);
+    }
+    .nav-arrow img {
+      width: 60%;
+      height: 60%;
+      transform: rotate(180deg);
+    }
+    .nav-arrow.right img { transform: rotate(0); }
+    #month-name {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: calc(var(--button-box) * 2.5);
+      height: var(--button-box);
+      line-height: var(--button-box);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .arrow {
+      position:absolute; right:var(--strip-padding);
+      top:50%; transform:translateY(-50%);
+      background:transparent; border:2px solid var(--text-color);
+      color:var(--text-color);
+      font-family:var(--font-family);
+      width: var(--square-size);
+      height: var(--square-size);
+      line-height: var(--square-size);
+      padding:0;
+      box-sizing:border-box;
+      opacity:0; transition:opacity var(--transition-duration);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+    }
+    .arrow img {
+      width:60%;
+      height:60%;
+      display:block;
+    }
+    .back {
+      position: absolute;
+      left: var(--strip-padding);
+      top: var(--strip-padding);
+      width: calc(var(--button-box) * 0.25);
+      height: calc(var(--button-box) * 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--text-color);
+      background: transparent;
+      color: var(--text-color);
+      font-size: calc(var(--text-size) * 0.25);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity var(--transition-duration);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .back img {
+      width: 60%;
+      height: 60%;
+      transform: rotate(180deg);
+    }
+    #startStep { justify-content: center; }
+
+    #startBtn {
+      font-size: var(--text-size);
+      background: transparent;
+      color: var(--text-color);
+      border: none;
+      cursor: pointer;
+      transition: opacity var(--transition-duration);
+      font-family: var(--font-family);
+    }
+    #startBtn.fade { opacity: 0; }
+
+    #step9 { justify-content: center; }
+    #finalOkBtn {
+      font-size: var(--text-size);
+      background: transparent;
+      color: var(--text-color);
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-family);
+      opacity: 0;
+      transition: opacity var(--transition-duration);
+    }
+    .clickable { pointer-events:auto; cursor:pointer; }
+
+
+
+    .confirm {
+      opacity: 0;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .custom-input {
+      position: relative;
+      border: 2px solid var(--text-color);
+      width: var(--button-box);
+      height: var(--button-box);
+      transition: width var(--transition-duration);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--control-gap);
+      opacity: 1;
+    }
+    .custom-input input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      text-align: center;
+      font-size: clamp(4vh,4vw,var(--text-size));
+      font-family: var(--font-family);
+      font-weight: normal;
+      height: var(--button-box);
+      outline: none;
+    }
+    .custom-input input::-webkit-inner-spin-button,
+    .custom-input input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .custom-input input {
+      -moz-appearance: textfield;
+    }
+    .custom-input .arrow {
+      position: static;
+      transform: none;
+      top: auto;
+      right: auto;
+      margin-left: 10px;
+      width: var(--square-size);
+      height: var(--square-size);
+      line-height: var(--square-size);
+      padding: 0;
+    }
+    button.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+    #summaryTyper {
+      overflow: visible;
+      width: fit-content;
+    }
+    #thanksTyper {
+      font-size: calc(var(--text-size) * 0.5);
+    }
+    .scroll {
+      white-space: nowrap;
+      display: inline-block;
+      animation: slideLeft 10s linear forwards;
+      pointer-events: none;
+    }
+    @keyframes slideLeft {
+      from { transform: translateX(100vw); }
+      to { transform: translateX(calc(-100% - 100vw)); }
+    }
+  </style>
+</head>
+<body>
+  <div id="reservation">
+    <button id="backBtn" class="back"><img src="static/reserver/arrow.svg" alt=""/></button>
+    <div class="step" id="startStep">
+      <button id="startBtn">Réserver</button>
+    </div>
+    <div class="step" data-question="Réserver:" id="step1">
+      <span class="typer"></span>
+      <div class="controls" id="controls1">
+        <button data-value="Aux Dés Calés 17">Aux Dés Calés 17</button>
+        <button data-value="Aux Dés Calés 18">Aux Dés Calés 18</button>
+        <button data-value="Au Détour">Au Détour</button>
+      </div>
+    </div>
+    <div class="step" data-question="Vous serez combien ?" id="step2">
+      <span class="typer"></span>
+      <div class="controls" id="controls2"></div>
+    </div>
+    <div class="step" data-question="Quel Jour ?" id="step3">
+      <span class="typer"></span>
+      <div class="controls" id="controls3">
+        <button id="prev-day" class="nav-arrow"><img src="static/reserver/arrow.svg" alt=""/></button>
+        <span id="day-num" class="slider"></span>
+        <button id="next-day" class="nav-arrow right"><img src="static/reserver/arrow.svg" alt=""/></button>
+        <button id="prev-month" class="nav-arrow"><img src="static/reserver/arrow.svg" alt=""/></button>
+        <span id="month-name" class="slider"></span>
+        <button id="next-month" class="nav-arrow right"><img src="static/reserver/arrow.svg" alt=""/></button>
+      </div>
+      <button class="arrow" id="arrow3"><img src="static/reserver/arrow.svg" alt=""/></button>
+    </div>
+    <div class="step" data-question="Quelle heure ?" id="step4">
+      <span class="typer"></span>
+      <div class="controls" id="controls4">
+        <button data-value="Midi">Midi</button>
+        <span class="or">ou</span>
+        <button data-value="Soir">Soir</button>
+      </div>
+    </div>
+    <div class="step" id="step5">
+      <div class="controls" id="controls5"></div>
+    </div>
+    <div class="step" data-question="À quel nom ?" id="step6">
+      <span class="typer"></span>
+      <div class="name-fields">
+        <input type="text" id="lastname-input" class="text-input" placeholder="Nom">
+        <input type="text" id="firstname-input" class="text-input" placeholder="Prénom">
+      </div>
+      <button class="arrow" id="arrow6"><img src="static/reserver/arrow.svg" alt=""/></button>
+    </div>
+    <div class="step" id="step7">
+      <span class="typer" id="summaryTyper"></span>
+    </div>
+    <div class="step" data-question="Comment vous contacter ?" id="stepContact">
+      <span class="typer"></span>
+      <div class="name-fields">
+        <input type="text" id="email-input" class="text-input" placeholder="Email">
+        <input type="text" id="phone-input" class="text-input" placeholder="Téléphone">
+      </div>
+      <button class="arrow" id="arrowContact"><img src="static/reserver/arrow.svg" alt=""/></button>
+    </div>
+    <div class="step" data-question="Une info à rajouter?" id="step8">
+      <span class="typer"></span>
+      <input type="text" id="info-input" class="text-input" placeholder="Une table en terrasse...">
+      <button class="arrow" id="arrow8"><img src="static/reserver/arrow.svg" alt=""/></button>
+    </div>
+    <div class="step" id="step9">
+      <span class="typer clickable" id="finalOkTyper"></span>
+    </div>
+    <div class="step" id="step10">
+      <span class="typer" id="thanksTyper"></span>
+    </div>
+  </div>
+  <script>
+    const reservation = {};
+    const reservationDiv = document.getElementById('reservation');
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const backBtn = document.getElementById('backBtn');
+    let idx = 0;
+
+    function typeText(el, text, cb) {
+      el.textContent = '';
+      let i = 0;
+      el.style.borderRight = '2px solid var(--text-color)';
+      const iv = setInterval(() => {
+        el.textContent += text.charAt(i);
+        i++;
+        if (i > text.length) {
+          clearInterval(iv);
+          cb && cb();
+        }
+      }, 50);
+    }
+
+    function typeOut(el, cb) {
+      let i = el.textContent.length;
+      el.style.borderRight = '2px solid var(--text-color)';
+      const iv = setInterval(() => {
+        el.textContent = el.textContent.slice(0, --i);
+        if (i <= 0) {
+          clearInterval(iv);
+          el.style.borderRight = 'none';
+          cb && cb();
+        }
+      }, 50);
+    }
+
+    function fadeInSeq(container, cb) {
+      const items = Array.from(container.children);
+      items.forEach((it, i) => setTimeout(() => it.style.opacity = '1', i * 200));
+      setTimeout(cb, items.length * 200);
+    }
+
+    function fadeOutSeq(container, cb) {
+      const items = Array.from(container.children);
+      items.forEach((it, i) => setTimeout(() => it.style.opacity = '0', i * 50));
+      setTimeout(() => { container.style.visibility = 'hidden'; cb && cb(); }, items.length * 50);
+    }
+
+    function slideValue(el, newVal, dir) {
+      el.style.position = 'relative';
+      let current = el.querySelector('.value');
+      if (!current) {
+        current = document.createElement('span');
+        current.className = 'value';
+        current.textContent = el.textContent;
+        Object.assign(current.style, {
+          position: 'absolute', left: '0', top: '0', width: '100%', height: '100%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'transform 0.3s, opacity 0.3s'
+        });
+        el.textContent = '';
+        el.appendChild(current);
+      }
+      const incoming = document.createElement('span');
+      incoming.className = 'value';
+      incoming.textContent = newVal;
+      Object.assign(incoming.style, {
+        position: 'absolute', left: '0', top: '0', width: '100%', height: '100%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transform: `translateX(${dir === 'left' ? '100%' : '-100%'})`,
+        opacity: '0',
+        transition: 'transform 0.3s, opacity 0.3s'
+      });
+      el.appendChild(incoming);
+      requestAnimationFrame(() => {
+        current.style.transform = `translateX(${dir === 'left' ? '-100%' : '100%'})`;
+        current.style.opacity = '0';
+        incoming.style.transform = 'translateX(0)';
+        incoming.style.opacity = '1';
+      });
+      setTimeout(() => {
+        current.remove();
+      }, 300);
+    }
+
+  function showStep(i) {
+     steps.forEach(s => s.classList.remove('active'));
+     const s = steps[i];
+     s.classList.add('active');
+     updateBackButton();
+     const summary = document.getElementById('summaryTyper');
+      if (summary) {
+        summary.classList.remove('scroll');
+        summary.style.transform = 'none';
+        summary.textContent = '';
+      }
+      reservationDiv.scrollLeft = 0;
+      if (s.id === 'startStep') {
+        const btn = document.getElementById('startBtn');
+        btn.classList.remove('fade');
+        btn.textContent = '';
+        typeText(btn, 'Réserver');
+        return;
+      }
+      const question = s.getAttribute('data-question');
+      const typer = s.querySelector('.typer');
+      if (s.id === 'step10') {
+        const t = document.getElementById('thanksTyper');
+        t.textContent = '';
+        typeText(t, 'Merci pour votre réservation!', () => {
+          setTimeout(() => {
+            typeOut(t, () => {
+              resetAll();
+              showStep(0);
+            });
+          }, 1000);
+        });
+        return;
+      } else if (s.id === 'step9') {
+        const btn = document.getElementById('finalOkTyper');
+        btn.textContent = '';
+        typeText(btn, 'Tout est OK!', () => {
+          btn.classList.add('clickable');
+          btn.addEventListener('click', () => {
+            btn.classList.remove('clickable');
+            typeOut(btn, () => next());
+          }, { once: true });
+        });
+        return;
+      }
+      const controls = s.querySelector('.controls');
+      const arrow = s.querySelector('.arrow');
+      if (controls) {
+        controls.style.visibility = 'hidden';
+        controls.querySelectorAll('*').forEach(el => el.style.opacity = '0');
+      }
+      if (arrow) arrow.style.opacity = '0';
+
+
+      if (s.id === 'step1') {
+        if (typer) {
+          typer.style.opacity = '0';
+          typer.style.borderRight = 'none';
+        }
+        if (controls) {
+          controls.style.visibility = 'visible';
+          fadeInSeq(controls, () => { if (arrow) arrow.style.opacity = '1'; });
+        }
+        return;
+      }
+
+      if (s.id === 'step5') {
+        if (controls) {
+          loadTimes();
+          controls.style.visibility = 'visible';
+          fadeInSeq(controls, () => { if (arrow) arrow.style.opacity = '1'; });
+        }
+        return;
+      }
+
+      if (s.id === 'step7') {
+        reservationDiv.style.overflow = 'visible';
+        const sum = `Réservation ${reservation.restaurant} pour ${reservation.people} personnes le ${reservation.date} à ${reservation.time} au nom de ${reservation.lastname}, ${reservation.firstname}`;
+        const t = document.getElementById('summaryTyper');
+        t.textContent = sum;
+        t.classList.add('scroll');
+        t.addEventListener('animationend', () => {
+          t.classList.remove('scroll');
+          t.style.transform = 'none';
+          t.textContent = '';
+          next();
+        }, {once:true});
+        return;
+      } else if (s.id === 'stepContact') {
+        if (typer && question) {
+          typer.style.opacity = '1';
+          typeText(typer, question, () => {
+            setTimeout(() => {
+              typeOut(typer, () => {
+                typer.style.opacity = '0';
+                const inputs = s.querySelectorAll('.text-input');
+                inputs.forEach(inp => { inp.style.visibility = 'visible'; inp.style.opacity = '1'; });
+                if (arrow) arrow.style.opacity = '1';
+                initContactStep();
+              });
+            }, 3000);
+          });
+        } else {
+          initContactStep();
+        }
+        return;
+      } else {
+        reservationDiv.style.overflowX = 'auto';
+      }
+
+      if (typer && question) {
+        typer.style.opacity = '1';
+        typeText(typer, question, () => {
+          setTimeout(() => {
+            typeOut(typer, () => {
+              typer.style.opacity = '0';
+              if (controls) {
+                controls.style.visibility = 'visible';
+                fadeInSeq(controls, () => {
+                  if (arrow) arrow.style.opacity = '1';
+                });
+              } else if (s.id === 'step6') {
+                initNameStep();
+                if (arrow) arrow.style.opacity = '1';
+              } else if (s.id === 'step8') {
+                initInfoStep();
+              }
+            });
+          }, 3000);
+        });
+      }
+      updateBackButton();
+  }
+
+  function updateBackButton() {
+    const stepId = steps[idx].id;
+    if (stepId === 'startStep' || stepId === 'step10') {
+      backBtn.style.opacity = '0';
+      backBtn.style.pointerEvents = 'none';
+    } else {
+      backBtn.style.opacity = '1';
+      backBtn.style.pointerEvents = 'auto';
+    }
+  }
+
+  function resetStepData(stepIdx) {
+    const sid = steps[stepIdx].id;
+    switch (sid) {
+      case 'step1':
+        delete reservation.restaurant;
+        document.querySelectorAll('#controls1 button').forEach(b => {
+          b.classList.remove('selected');
+          b.style.opacity = '1';
+        });
+        break;
+      case 'step2':
+        delete reservation.people;
+        createControls2();
+        break;
+      case 'step3':
+        delete reservation.date;
+        dayNumEl.textContent = now.getDate();
+        m = now.getMonth();
+        monthNameEl.textContent = months[m];
+        updateDateArrows();
+        break;
+      case 'step4':
+        delete reservation.period;
+        controls4.querySelectorAll('button').forEach(b => {
+          b.classList.remove('selected');
+          b.style.opacity = '1';
+        });
+        break;
+      case 'step5':
+        delete reservation.time;
+        c5.innerHTML = '';
+        break;
+      case 'step6':
+        delete reservation.lastname;
+        delete reservation.firstname;
+        break;
+      case 'stepContact':
+        delete reservation.email;
+        delete reservation.phone;
+        break;
+      case 'step8':
+        delete reservation.comment;
+        document.getElementById('info-input').value = '';
+        document.getElementById('arrow8').style.opacity = '1';
+        break;
+      default:
+        break;
+    }
+  }
+
+  function resetAll() {
+    for (let i = 1; i < steps.length; i++) {
+      resetStepData(i);
+    }
+    for (const k in reservation) delete reservation[k];
+  }
+
+    function next() {
+      const current = steps[idx];
+      const controls = current.querySelector('.controls');
+      const arrow = current.querySelector('.arrow');
+      if (controls) fadeOutSeq(controls, () => {});
+      if (arrow) arrow.style.opacity = '0';
+      setTimeout(() => {
+        idx++;
+        showStep(idx);
+      }, 400);
+    }
+
+    // Step1
+    document.querySelectorAll('#controls1 button').forEach(btn => btn.addEventListener('click', e => {
+      [...document.querySelectorAll('#controls1 button')].forEach(b => b.style.opacity = '0');
+      btn.classList.add('selected');
+      reservation.restaurant = btn.dataset.value;
+      setTimeout(next, 400);
+    }));
+
+    // Step2
+    const c2 = document.getElementById('controls2');
+    function createControls2() {
+      c2.innerHTML = '';
+      for (let i = 1; i <= 7; i++) {
+        const b = document.createElement('button');
+        b.textContent = i;
+        b.addEventListener('click', () => {
+          Array.from(c2.children).forEach(ch => ch.style.opacity = '0');
+          b.classList.add('selected');
+          reservation.people = i;
+          setTimeout(next, 400);
+        });
+        c2.appendChild(b);
+      }
+      const plus = document.createElement('button');
+      plus.textContent = '+';
+      plus.addEventListener('click', () => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom-input';
+        wrapper.style.opacity = '1';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.inputMode = 'numeric';
+        input.pattern = '[0-9]*';
+        wrapper.appendChild(input);
+        const confirm = document.createElement('button');
+        confirm.className = 'arrow';
+        const img = document.createElement('img');
+        img.src = 'static/reserver/arrow.svg';
+        confirm.appendChild(img);
+        wrapper.appendChild(confirm);
+        c2.replaceChild(wrapper, plus);
+        setTimeout(() => {
+          wrapper.style.width = 'calc(var(--button-box)*2)';
+          confirm.style.opacity = '1';
+        }, 10);
+        input.focus();
+        confirm.onclick = () => {
+          const v = parseInt(input.value, 10);
+          if (!isNaN(v) && v > 0) {
+            reservation.people = v;
+            next();
+          }
+        };
+      });
+      c2.appendChild(plus);
+    }
+    createControls2();
+
+    // Step3 day/month
+    const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    const now = new Date();
+    let m = now.getMonth();
+    const monthNameEl = document.getElementById('month-name');
+    const dayNumEl = document.getElementById('day-num');
+    dayNumEl.textContent = now.getDate();
+    monthNameEl.textContent = months[m];
+    const prevDayBtn = document.getElementById('prev-day');
+    const nextDayBtn = document.getElementById('next-day');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    let dateCooldown = false;
+
+    function updateDateArrows() {
+      if (m === now.getMonth()) {
+        prevMonthBtn.classList.add('disabled');
+      } else {
+        prevMonthBtn.classList.remove('disabled');
+      }
+      if (m === now.getMonth() && parseInt(dayNumEl.textContent, 10) <= now.getDate()) {
+        prevDayBtn.classList.add('disabled');
+      } else {
+        prevDayBtn.classList.remove('disabled');
+      }
+    }
+    updateDateArrows();
+
+    function withDateCooldown(fn) {
+      if (dateCooldown) return;
+      dateCooldown = true;
+      fn();
+      setTimeout(() => (dateCooldown = false), 1000);
+    }
+
+    prevDayBtn.onclick = () => withDateCooldown(() => {
+      let d = parseInt(dayNumEl.textContent, 10);
+      if (m === now.getMonth() && d <= now.getDate()) return;
+      if (d > 1) {
+        slideValue(dayNumEl, d - 1, 'right');
+      } else {
+        if (m === now.getMonth()) return;
+        m = (m + 11) % 12;
+        slideValue(monthNameEl, months[m], 'right');
+        slideValue(dayNumEl, 31, 'right');
+      }
+      updateDateArrows();
+    });
+    nextDayBtn.onclick = () => withDateCooldown(() => {
+      let d = parseInt(dayNumEl.textContent, 10);
+      if (d < 31) {
+        slideValue(dayNumEl, d + 1, 'left');
+      } else {
+        m = (m + 1) % 12;
+        slideValue(monthNameEl, months[m], 'left');
+        slideValue(dayNumEl, 1, 'left');
+      }
+      updateDateArrows();
+    });
+    prevMonthBtn.onclick = () => withDateCooldown(() => {
+      if (m === now.getMonth()) return;
+      m = (m + 11) % 12;
+      slideValue(monthNameEl, months[m], 'right');
+      updateDateArrows();
+    });
+    nextMonthBtn.onclick = () => withDateCooldown(() => {
+      m = (m + 1) % 12;
+      slideValue(monthNameEl, months[m], 'left');
+      updateDateArrows();
+    });
+    document.getElementById('arrow3').addEventListener('click', () => {
+      reservation.date = `${dayNumEl.textContent} ${months[m]}`;
+      next();
+    });
+
+    // Step4
+    const controls4 = document.getElementById('controls4');
+    document.querySelectorAll('#controls4 button').forEach(btn => btn.addEventListener('click', () => {
+      Array.from(controls4.children).forEach(c => c.style.opacity = '0');
+      btn.classList.add('selected');
+      reservation.period = btn.dataset.value;
+      setTimeout(next, 400);
+    }));
+
+    // Step5 times
+    const c5 = document.getElementById('controls5');
+    function adjustTimeButtonSize() {
+      const total = c5.children.length;
+      c5.style.gridTemplateColumns = `repeat(${total}, var(--square-size))`;
+    }
+
+    function loadTimes() {
+      c5.innerHTML = '';
+      let slots;
+      let lastHour;
+      if (reservation.period === 'Midi') {
+        slots = [12,'30',13,'30',14,'30',15,'30',16,'30'];
+        lastHour = 12;
+      } else {
+        slots = [17,'30',18,'30',19,'30',20,'30',21,'30',22,'30'];
+        lastHour = 17;
+      }
+      slots.forEach(label => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        const time = label === '30'
+          ? `${String(lastHour).padStart(2,'0')}:30`
+          : `${String(label).padStart(2,'0')}:00`;
+        if (label !== '30') lastHour = label;
+        b.dataset.time = time;
+        b.addEventListener('click', () => {
+          Array.from(c5.children).forEach(ch => ch.style.opacity = '0');
+          b.classList.add('selected');
+          reservation.time = b.dataset.time;
+          setTimeout(next, 400);
+        });
+        c5.appendChild(b);
+      });
+      adjustTimeButtonSize();
+    }
+
+    // Step6 name input
+  function initNameStep() {
+    const last = document.getElementById('lastname-input');
+    const first = document.getElementById('firstname-input');
+     [last, first].forEach(el => { el.style.visibility = 'visible'; el.style.opacity = '1'; });
+     last.focus();
+     const arrow6 = document.getElementById('arrow6');
+     arrow6.style.opacity = '1';
+    arrow6.onclick = () => {
+      const ln = last.value.trim();
+      const fn = first.value.trim();
+      if (!ln || !fn) {
+        return;
+      }
+      reservation.lastname = ln;
+      reservation.firstname = fn;
+      [last, first].forEach(el => { el.style.opacity = '0'; el.style.visibility = 'hidden'; });
+      next();
+    };
+  }
+
+  function initContactStep() {
+    const email = document.getElementById('email-input');
+    const phone = document.getElementById('phone-input');
+    [email, phone].forEach(el => { el.style.visibility = 'visible'; el.style.opacity = '1'; });
+    email.focus();
+    const arrow = document.getElementById('arrowContact');
+    arrow.style.opacity = '1';
+    arrow.onclick = () => {
+      const em = email.value.trim();
+      const ph = phone.value.trim();
+      if (!em || !ph) {
+        return;
+      }
+      reservation.email = em;
+      reservation.phone = ph;
+      [email, phone].forEach(el => { el.style.opacity = '0'; el.style.visibility = 'hidden'; });
+      next();
+    };
+  }
+
+
+    // Step8 info input
+  function initInfoStep() {
+      const inEl = document.getElementById('info-input');
+      const confirm = document.getElementById('arrow8');
+      inEl.value = '';
+      inEl.style.visibility = 'visible';
+      inEl.style.opacity = '1';
+      inEl.focus();
+      confirm.style.opacity = '1';
+      confirm.onclick = () => {
+        reservation.comment = inEl.value.trim();
+        confirm.style.opacity = '0';
+        inEl.style.opacity = '0';
+        inEl.style.visibility = 'hidden';
+        setTimeout(next, 400);
+      };
+  }
+
+  // Initialize
+  document.getElementById('startBtn').addEventListener('click', () => {
+      const b = document.getElementById('startBtn');
+      b.classList.add('fade');
+      setTimeout(() => { idx = 1; showStep(1); }, 400);
+    });
+    backBtn.addEventListener('click', () => {
+      if (idx > 0) {
+        resetStepData(idx);
+        idx--;
+        resetStepData(idx);
+        showStep(idx);
+      }
+    });
+    window.addEventListener('resize', () => {
+      if (steps[idx].id === 'step5') adjustTimeButtonSize();
+    });
+    showStep(0);
+  </script>
+</body>
+</html>
