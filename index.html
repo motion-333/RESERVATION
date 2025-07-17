@@ -145,17 +145,6 @@
     #day-num {
       width: calc(var(--button-box) * 0.8);
     }
-    .nav-control {
-      position: static;
-      right: auto;
-      top: auto;
-      transform: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .nav-control img { transform: rotate(0); }
-    .nav-control.prev img { transform: rotate(180deg); }
     #month-name {
       display: inline-flex;
       align-items: center;
@@ -187,6 +176,18 @@
       height:60%;
       display:block;
     }
+
+    .nav-control {
+      position: static;
+      right: auto;
+      top: auto;
+      transform: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-control img { transform: rotate(0); }
+    .nav-control.prev img { transform: rotate(180deg); }
     .back {
       position: absolute;
       left: var(--strip-padding);
